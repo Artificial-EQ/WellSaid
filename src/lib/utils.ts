@@ -38,15 +38,18 @@ const cleanReplyText = (text: string): string => {
 }
 
 export const extractReplies = (rawOutput: string): string[] => {
-    const replyPattern = /\*\*Reply\s*\d:\*\*\s*(.*)|Reply\s*\d:\s*(.*)/g
-    const replies = Array.from(rawOutput.matchAll(replyPattern))
-        .map((m) => {
-            const currentMatch = m as RegExpMatchArray
-            return cleanReplyText(currentMatch[1] || currentMatch[2] || '')
-        })
-        .filter(Boolean)
-
-    return replies
+    // Match formats like:
+    // Reply 1 (Short): [text]
+    // Reply 2: [text]
+    // **Reply 3:** [text]
+    const replyPattern = /(?:Reply\s+\d+\s*(?:\([^)]+\))?:|\*\*Reply\s*\d+\*\*:?)\s*([^\n]+)/gi
+    const matches = rawOutput.match(replyPattern) || []
+    
+    return matches.map(reply => {
+        // Remove the prefix (e.g., "Reply 1 (Short): " or "**Reply 1:** ")
+        const text = reply.replace(/^.*?:\s*/, '').trim()
+        return cleanReplyText(text)
+    }).filter(Boolean)
 }
 
 export const safeCompare = (a: string, b: string): boolean => {
