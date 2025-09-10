@@ -45,11 +45,13 @@ export const extractReplies = (rawOutput: string): string[] => {
     const replyPattern = /(?:Reply\s+\d+\s*(?:\([^)]+\))?:|\*\*Reply\s*\d+\*\*:?)\s*([^\n]+)/gi
     const matches = rawOutput.match(replyPattern) || []
 
-    return matches.map(reply => {
-        // Remove the prefix (e.g., "Reply 1 (Short): " or "**Reply 1:** ")
-        const text = reply.replace(/^.*?:\s*/, '').trim()
-        return cleanReplyText(text)
-    }).filter(Boolean)
+    return matches
+        .map((reply) => {
+            // Remove the prefix (e.g., "Reply 1 (Short): " or "**Reply 1:** ")
+            const text = reply.replace(/^.*?:\s*/, '').trim()
+            return cleanReplyText(text)
+        })
+        .filter(Boolean)
 }
 
 export const safeCompare = (a: string, b: string): boolean => {

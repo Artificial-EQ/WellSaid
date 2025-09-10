@@ -73,8 +73,7 @@ export const getOpenaiReply = async (
         ...(config.topP && { top_p: config.topP }),
         ...(config.frequencyPenalty && { frequency_penalty: config.frequencyPenalty }),
         ...(config.presencePenalty && { presence_penalty: config.presencePenalty }),
-        // Remove tools and use text-based response
-        response_format: { type: 'text' }
+        response_format: { type: 'text' },
     }
 
     logger.debug({ body }, 'Sending request to OpenAI')
@@ -102,19 +101,19 @@ export const getOpenaiReply = async (
 
         const data = await response.json()
         const rawOutput = data.choices[0]?.message?.content || ''
-        
+
         if (!rawOutput) {
             throw new Error('Empty response from OpenAI')
         }
-        
+
         const summary = parseSummaryToHumanReadable(rawOutput)
         const replies = extractReplies(rawOutput)
-        
+
         if (!summary || !replies.length) {
             logger.error({ rawOutput }, 'Failed to parse response from OpenAI')
             throw new Error('Invalid response format from OpenAI')
         }
-        
+
         return { summary, replies }
     } catch (error) {
         logger.error({ error }, 'Error in getOpenaiReply (fetching or parsing OpenAI response)')

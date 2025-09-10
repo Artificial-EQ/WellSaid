@@ -39,8 +39,7 @@ export const getGrokReply = async (
             { role: 'user', content: prompt },
         ],
         temperature: config.temperature,
-        // Remove tools and use text-based response
-        response_format: { type: 'text' }
+        response_format: { type: 'text' },
     }
 
     logger.debug({ body }, 'Sending request to Grok')
@@ -63,19 +62,19 @@ export const getGrokReply = async (
 
         const data = await response.json()
         const rawOutput = data.choices[0]?.message?.content || ''
-        
+
         if (!rawOutput) {
             throw new Error('Empty response from Grok')
         }
-        
+
         const summary = parseSummaryToHumanReadable(rawOutput)
         const replies = extractReplies(rawOutput)
-        
+
         if (!summary || !replies.length) {
             logger.error({ rawOutput }, 'Failed to parse response from Grok')
             throw new Error('Invalid response format from Grok')
         }
-        
+
         return { summary, replies }
     } catch (error) {
         logger.error({ error }, 'Failed to get Grok reply')
