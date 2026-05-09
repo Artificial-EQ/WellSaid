@@ -54,7 +54,7 @@ export function getAvailableProviders(): ProviderConfig[] {
 }
 
 /**
- * Get the default provider (prioritizes Khoj if available, falls back to OpenAI)
+ * Get the default provider (prioritizes OpenAI if available, falls back to first available)
  */
 export function getDefaultProvider(): string {
     const available = getAvailableProviders()
@@ -65,9 +65,8 @@ export function getDefaultProvider(): string {
         )
     }
 
-    // Prefer Khoj if available, otherwise use the first available provider
-    const khojProvider = available.find((p) => p.id === 'khoj')
-    return khojProvider ? 'khoj' : available[0].id
+    const openaiProvider = available.find((p) => p.id === 'openai')
+    return openaiProvider ? 'openai' : available[0].id
 }
 
 /**
