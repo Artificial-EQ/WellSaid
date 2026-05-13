@@ -28,7 +28,7 @@
         display: flex;
         flex-wrap: wrap;
         gap: 0.25rem;
-        background-color: var(--primary-light);
+        background-color: var(--accent-soft);
     }
 
     .tone-selector label {
@@ -37,7 +37,7 @@
         align-items: center;
         justify-content: center;
         padding: 0.05rem 0.5rem;
-        border: 1px solid var(--primary-light);
+        border: 1px solid var(--border);
         border-radius: var(--border-radius);
         cursor: pointer;
         font-size: 0.73rem;
@@ -47,12 +47,12 @@
             box-shadow 0.2s;
         min-height: 28px;
         min-width: 60px;
-        background-color: var(--light);
+        background-color: var(--card);
     }
 
     .tone-selector label.active {
-        background-color: var(--primary-dark);
-        color: var(--white);
+        background-color: var(--accent);
+        color: var(--accent-text);
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     }
 
