@@ -11,8 +11,10 @@
     })
 
     async function copyActive() {
+        const text = replies[activeTab]
+        if (!text) return
         try {
-            await navigator.clipboard.writeText(replies[activeTab])
+            await navigator.clipboard.writeText(text)
             copied = true
             setTimeout(() => (copied = false), 2000)
         } catch (err) {

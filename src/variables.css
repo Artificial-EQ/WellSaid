@@ -35,6 +35,7 @@
 }
 
 [data-theme='dark'] {
+    color-scheme: dark;
     --bg: oklch(0.18 0.015 50);
     --surface: oklch(0.23 0.018 50);
     --card: oklch(0.27 0.02 50);
