@@ -3,7 +3,7 @@
 </script>
 
 <details class="context-details" bind:open={expanded}>
-    <summary>add more context</summary>
+    <summary>add context</summary>
     <textarea
         class="context-input"
         rows="4"

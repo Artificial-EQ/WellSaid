@@ -329,7 +329,7 @@
                                     class="draft-input"
                                     rows="4"
                                     bind:value={formState.form.userDraft}
-                                    placeholder="write your raw response here — unfiltered is fine"
+                                    placeholder="Write your raw, unfiltered response here. Go nuts. We'll sort it out"
                                 ></textarea>
                                 <div class="translate-controls">
                                     {#if formState.form.userDraft.trim()}

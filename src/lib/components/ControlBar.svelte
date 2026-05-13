@@ -54,13 +54,15 @@
         display: flex;
         flex-direction: row;
         flex-wrap: wrap;
+        align-items: center;
+        gap: 1rem;
         margin-bottom: 1rem;
     }
 
     .timeframe-controls {
-        justify-content: space-between;
         display: flex;
         align-items: center;
+        gap: 0.5rem;
         line-height: 1;
         flex-wrap: wrap;
     }
@@ -70,35 +72,36 @@
     }
 
     .go-button {
-        background-color: var(--primary-dark);
-        color: var(--white);
-        border: 1px solid var(--primary-light);
-        border-radius: var(--border-radius);
-        font-weight: 500;
-        cursor: pointer;
-        transition:
-            background-color 0.2s,
-            transform 0.1s;
-        min-height: var(--min-touch-size);
-        min-width: var(--min-touch-size);
+        background-color: var(--accent);
+        color: var(--accent-text);
+        border: none;
+        border-radius: 999px;
+        font-family: var(--body-font);
+        font-size: 0.875rem;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        padding: 0 1.1rem;
+        height: 36px;
         display: flex;
         align-items: center;
         justify-content: center;
+        cursor: pointer;
+        transition: opacity 0.15s, transform 0.1s;
+        white-space: nowrap;
     }
 
-    .go-button:hover {
-        background-color: var(--primary-dark);
+    .go-button:hover:not(:disabled) {
+        opacity: 0.88;
     }
 
-    .go-button:active {
-        transform: scale(0.98);
+    .go-button:active:not(:disabled) {
+        transform: scale(0.97);
     }
 
     .go-button:disabled {
-        background-color: var(--light);
-        color: var(--gray);
+        background-color: var(--surface);
+        color: var(--text-muted);
         cursor: not-allowed;
-        border-color: var(--light);
     }
 
     .loading-spinner {
@@ -115,8 +118,8 @@
         font-size: 0.95rem;
         display: flex;
         align-items: center;
-        color: var(--text-color);
-        margin-top: 0.5rem;
+        color: var(--text-muted);
+        margin-left: auto;
     }
 
     .message-count-value {
@@ -124,36 +127,9 @@
         margin: 0 0.25rem;
     }
 
-    /* Mobile */
     @media (max-width: 600px) {
-        .control-bar {
-            flex-direction: column;
-            align-items: stretch;
-        }
-        .timeframe-controls {
-            width: 100%;
-            margin-bottom: 0.75rem;
-        }
         .message-count {
-            text-align: center;
-            width: 100%;
-            margin-top: 0;
-        }
-    }
-
-    /* Desktop */
-    @media (min-width: 768px) {
-        .control-bar {
-            align-items: center;
-        }
-        .timeframe-controls {
-            gap: 1rem;
-        }
-        .message-count {
-            margin-left: auto;
-            align-items: center;
-            justify-content: flex-end;
-            text-align: right;
+            margin-left: 0;
         }
     }
 </style>
