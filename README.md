@@ -32,11 +32,13 @@
 
 ## Features
 
-- **Conversation Summaries**: Analyze and summarize your Apple iMessage conversations with a specified contact from the last 1-24 hours
-- **Smart Reply Suggestions**: Get short, medium, and long AI-generated reply options based on recent and and historical conversation context
-- **Tone Selection**: Set the tone for your replies with (eg: gentle, funny, reassuring, concise)
+- **Conversation Summaries**: Analyze and summarize your Apple iMessage conversations with a specified contact from the last 15 minutes to 24 hours
+- **Smart Reply Suggestions**: Get short, medium, and long AI-generated reply options based on recent and historical conversation context
+- **Translate Mode**: Write your raw, unfiltered draft — WellSaid polishes it into short, medium, and long versions in your chosen tone
+- **Tone Selection**: Set the tone for your replies (gentle, funny, reassuring, concise)
 - **Context Addition**: Add additional context to help generate more relevant replies
-- **Message Database Integration**: Connects to your macOS Messages app database
+- **Dark Mode & Accent Colors**: Floating theme picker with 5 accent colors and dark/light toggle, persisted across sessions
+- **Message Database Integration**: Connects directly to your macOS Messages app database
 
 ## Getting Started
 
@@ -104,17 +106,19 @@ below), it will automatically use those files and start with HTTPS. Pretty cool.
 
 ## Usage
 
-1. Select a time frame to summarize
-1. Choose a tone for reply suggestions
-1. Click "go" to generate a conversation summary and some suggested replies of varying length
-1. Copy your preferred reply to paste into the conversation
+1. Select a time frame (15 min – 24 hours) and click **go** to generate a conversation summary and three suggested replies
+2. Copy a suggested reply directly, or write your own draft in the text box and click **translate** to have AI polish it into short, medium, and long versions
+3. Use the tone pills (gentle, funny, reassuring, concise) to shape the style of generated replies
+4. Click the 🎨 button (bottom right) to switch accent colors or toggle dark mode
 
 ## How It Works
 
-WellSaid connects to your macOS Messages database to fetch your conversations with a specific contact. It then uses an AI provider (Khoj, OpenAI, Anthropic, or Grok) to analyze the conversation and generate:
+WellSaid connects to your macOS Messages database to fetch your conversations with a specific contact. It then uses an AI provider (OpenAI, Anthropic, Grok, or Khoj) to analyze the conversation and generate:
 
 1. A summary of the conversation, including emotional tone and key topics
-1. Three suggested replies (short, medium, and long) in your chosen tone
+2. Three suggested replies (short, medium, and long) in your chosen tone
+
+In **translate mode**, you write a raw draft and the AI rewrites it in your chosen tone — useful when you know what you want to say but want help saying it well.
 
 ## Technical Details
 
@@ -131,10 +135,10 @@ WellSaid is built with a focus on minimalism and efficiency:
 This approach results in a lightweight, fast application that runs efficiently on macOS systems while maintaining all core functionality.
 
 - **Frontend**: Svelte 5 with SvelteKit
-- **State Management**: Svelte's built-in $state system
-- **Styling**: Custom CSS with variables for theming
-- **Database**: SQLite (connecting to macOS Messages database)
-- **AI Integration**: OpenAI API (GPT-4 or other models), Anthropic Claude models, Grok, and/or local [Khoj](https://khoj.dev/) server
+- **State Management**: Svelte's built-in `$state` runes
+- **Styling**: OKLch semantic color system with dark mode and accent theming (`src/variables.css`)
+- **Database**: SQLite (macOS Messages database + `settings.db` for runtime config)
+- **AI Integration**: OpenAI (gpt-4o), Anthropic (claude-opus-4-7), Grok (grok-3), and/or local [Khoj](https://khoj.dev/)
 - **Logging**: Pino for structured logging
 
 ## Development and Local Usage
