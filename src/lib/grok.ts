@@ -1,7 +1,7 @@
 import { settings } from '$lib/config'
 import { fetchRelevantHistory } from './history'
 import { logger } from './logger'
-import { openAiPrompt, systemContext } from './prompts'
+import { openAiPrompt, systemContext, translatePrompt, translateSystemContext } from './prompts'
 import type { Message, ToneType } from './types'
 import { extractReplies, formatMessagesAsText, parseSummaryToHumanReadable } from './utils'
 
@@ -82,5 +82,54 @@ export const getGrokReply = async (
             summary: '',
             replies: ['(AI API error. Check your key and usage.)'],
         }
+    }
+}
+
+export const translateGrokDraft = async (
+    messages: Message[],
+    tone: ToneType,
+    userDraft: string,
+    context: string
+): Promise<{ replies: string[] }> => {
+    const config = getConfig()
+
+    if (!config.apiKey) {
+        return { replies: ['Grok API key is not configured.'] }
+    }
+
+    const body = {
+        model: config.model,
+        messages: [
+            { role: 'system', content: translateSystemContext() },
+            { role: 'user', content: formatMessagesAsText(messages) },
+            { role: 'user', content: translatePrompt(userDraft, tone, context) },
+        ],
+        temperature: config.temperature,
+        response_format: { type: 'text' },
+    }
+
+    logger.info('Sending translate request to Grok')
+
+    try {
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${config.apiKey}`,
+            },
+            body: JSON.stringify(body),
+        })
+
+        if (!response.ok) {
+            throw new Error(`Grok API error code ${response.status}: ${response.statusText}`)
+        }
+
+        const data = await response.json()
+        const rawOutput = data.choices[0]?.message?.content || ''
+        const replies = extractReplies(rawOutput)
+        return { replies }
+    } catch (error) {
+        logger.error({ error }, 'Error in translateGrokDraft')
+        return { replies: ['(AI API error. Check your key and usage.)'] }
     }
 }

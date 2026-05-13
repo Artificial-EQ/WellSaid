@@ -4,6 +4,7 @@
     import AdditionalContext from '$lib/components/AdditionalContext.svelte'
     import AiProviderSelector from '$lib/components/AiProviderSelector.svelte'
     import ControlBar from '$lib/components/ControlBar.svelte'
+    import RawMessages from '$lib/components/RawMessages.svelte'
     import ReplySuggestions from '$lib/components/ReplySuggestions.svelte'
     import SettingsForm from '$lib/components/SettingsForm.svelte'
     import ToneSelector from '$lib/components/ToneSelector.svelte'
@@ -12,6 +13,7 @@
     import { type Message, type PageData, TONES, type ToneType } from '$lib/types'
 
     const LOCAL_STORAGE_CONTEXT_KEY = 'wellsaid_additional_context'
+    const LOCAL_STORAGE_DRAFT_KEY = 'wellsaid_user_draft'
 
     const { data, form } = $props<{
         data: PageData & {
@@ -31,6 +33,7 @@
         },
         ui: {
             loading: false,
+            translating: false,
         },
         form: {
             lookBackHours: '1',
@@ -39,6 +42,8 @@
             messages: [] as Message[],
             summary: '',
             suggestedReplies: [] as string[],
+            userDraft: '',
+            rawMessagesExpanded: false,
         },
     })
 
@@ -48,9 +53,16 @@
 
     // Derived values
     const hasMessages = $derived(formState.form.messages.length > 0)
-    const canGenerateReplies = $derived(hasMessages && !formState.ui.loading)
+    const canGenerateReplies = $derived(hasMessages && !formState.ui.loading && !formState.ui.translating)
     const hasProviders = $derived(data.availableProviders.length > 0)
-    const showLoadingIndicators = $derived(formState.ui.loading)
+    const hasSummary = $derived(formState.form.summary !== '')
+    const canTranslate = $derived(
+        hasSummary &&
+        formState.form.userDraft.trim().length > 0 &&
+        !formState.ui.translating &&
+        !formState.ui.loading
+    )
+    const showLoadingIndicators = $derived(formState.ui.loading || formState.ui.translating)
     const summaryContent = $derived(
         formState.ui.loading
             ? 'Generating summary and replies...'
@@ -103,6 +115,21 @@
             localStorage.setItem(LOCAL_STORAGE_CONTEXT_KEY, formState.form.additionalContext)
         } else {
             localStorage.removeItem(LOCAL_STORAGE_CONTEXT_KEY)
+        }
+    })
+
+    $effect(() => {
+        if (!browser) return
+        const storedDraft = localStorage.getItem(LOCAL_STORAGE_DRAFT_KEY)
+        if (storedDraft) formState.form.userDraft = storedDraft
+    })
+
+    $effect(() => {
+        if (!browser) return
+        if (formState.form.userDraft) {
+            localStorage.setItem(LOCAL_STORAGE_DRAFT_KEY, formState.form.userDraft)
+        } else {
+            localStorage.removeItem(LOCAL_STORAGE_DRAFT_KEY)
         }
     })
 
@@ -176,6 +203,61 @@
             formState.ui.loading = false
         }
     }
+
+    async function translateDraft() {
+        formState.ui.translating = true
+        formState.form.suggestedReplies = []
+
+        try {
+            const formData = new FormData()
+            formData.append('messages', JSON.stringify(formState.form.messages))
+            formData.append('tone', formState.form.tone)
+            formData.append('context', formState.form.additionalContext)
+            formData.append('provider', formState.ai.provider)
+            formData.append('userDraft', formState.form.userDraft)
+
+            const response = await fetch('?/translate', {
+                method: 'POST',
+                headers: { Accept: 'application/json' },
+                body: formData,
+            })
+
+            const result = await response.json()
+
+            if (!response.ok) {
+                const errorMessage = result?.error || 'Unknown error from action'
+                throw new Error(`Action failed: ${errorMessage}`)
+            }
+
+            if (result && typeof result.data === 'string') {
+                try {
+                    const parsedData = JSON.parse(result.data)
+                    // parsedData[0] = { replies: 1 }
+                    // parsedData[1] = [2, 3, 4] (indices of reply strings)
+                    // parsedData[2..4] = the actual reply strings
+                    const replyIndices = Array.isArray(parsedData[1]) ? parsedData[1] : []
+                    const replies: string[] = []
+                    for (const index of replyIndices) {
+                        if (parsedData[index] && typeof parsedData[index] === 'string') {
+                            replies.push(parsedData[index])
+                        }
+                    }
+                    formState.form.suggestedReplies = replies
+                } catch (parseError) {
+                    console.error('Error parsing translate data:', parseError)
+                    throw parseError
+                }
+            } else {
+                throw new Error('Unexpected response format from server')
+            }
+        } catch (error) {
+            formState.form.suggestedReplies = [
+                error instanceof Error ? error.message : 'Error translating draft. Please try again.',
+            ]
+        } finally {
+            formState.ui.translating = false
+        }
+    }
 </script>
 
 <svelte:head>
@@ -219,13 +301,45 @@
                         <!-- Conversation summary -->
                         <section class="conversation">
                             <div class="summary">
-                                {#if showLoadingIndicators}
+                                {#if showLoadingIndicators && !formState.ui.translating}
                                     <div class="loading-indicator">{summaryContent}</div>
                                 {:else}
                                     {summaryContent}
                                 {/if}
                             </div>
                         </section>
+
+                        <!-- Raw messages (collapsible) -->
+                        {#if hasMessages}
+                            <RawMessages
+                                messages={formState.form.messages}
+                                bind:expanded={formState.form.rawMessagesExpanded}
+                            />
+                        {/if}
+
+                        <!-- User draft + translate -->
+                        {#if hasSummary}
+                            <section class="draft-section">
+                                <label class="draft-label" for="user-draft">your draft:</label>
+                                <textarea
+                                    id="user-draft"
+                                    class="draft-input"
+                                    rows="4"
+                                    bind:value={formState.form.userDraft}
+                                    placeholder="write your raw response here — unfiltered is fine"
+                                ></textarea>
+                                <div class="translate-controls">
+                                    <button
+                                        type="button"
+                                        class="translate-button"
+                                        onclick={translateDraft}
+                                        disabled={!canTranslate}
+                                    >
+                                        {formState.ui.translating ? '...' : 'translate'}
+                                    </button>
+                                </div>
+                            </section>
+                        {/if}
 
                         <hr />
 
@@ -391,6 +505,73 @@
         color: var(--gray);
         font-style: italic;
         padding: 1rem;
+    }
+
+    /* ===== Draft & Translate ===== */
+    .draft-section {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .draft-label {
+        font-family: var(--label-font);
+        font-weight: 500;
+        font-size: 0.9rem;
+        color: var(--primary-dark);
+    }
+
+    .draft-input {
+        font-family: var(--label-font);
+        font-size: 1rem;
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid var(--light);
+        border-radius: var(--border-radius);
+        resize: vertical;
+        min-height: 80px;
+        color: var(--primary-dark);
+        background-color: var(--white);
+        text-size-adjust: 100%;
+        -webkit-text-size-adjust: 100%;
+        touch-action: manipulation;
+        box-sizing: border-box;
+    }
+
+    .translate-controls {
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    .translate-button {
+        background-color: var(--primary-dark);
+        color: var(--white);
+        border: 1px solid var(--light);
+        border-radius: var(--border-radius);
+        font-family: var(--body-font);
+        font-weight: 500;
+        cursor: pointer;
+        min-height: var(--min-touch-size);
+        padding: 0 1.25rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition:
+            background-color 0.2s,
+            transform 0.1s;
+    }
+
+    .translate-button:hover:not(:disabled) {
+        background-color: var(--primary-light);
+        color: var(--primary-dark);
+    }
+
+    .translate-button:disabled {
+        background-color: var(--light);
+        color: var(--gray);
+        cursor: not-allowed;
+        border-color: var(--light);
     }
 
     /* ===== Settings Styling ===== */

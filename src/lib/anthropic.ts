@@ -1,7 +1,7 @@
 import { settings } from '$lib/config'
-import { anthropicPrompt } from '$lib/prompts'
+import { anthropicPrompt, translatePrompt, translateSystemContext } from '$lib/prompts'
 import type { Message, ToneType } from '$lib/types'
-import { extractReplies, parseSummaryToHumanReadable } from '$lib/utils'
+import { extractReplies, formatMessagesAsText, parseSummaryToHumanReadable } from '$lib/utils'
 import { fetchRelevantHistory } from './history'
 import { logger } from './logger'
 
@@ -76,5 +76,57 @@ export const getAnthropicReply = async (
             summary: '',
             replies: ['(AI API error. Check your key and usage.)'],
         }
+    }
+}
+
+export const translateAnthropicDraft = async (
+    messages: Message[],
+    tone: ToneType,
+    userDraft: string,
+    context: string
+): Promise<{ replies: string[] }> => {
+    const config = getConfig()
+
+    if (!config.apiKey) {
+        return { replies: ['Anthropic API key is not configured.'] }
+    }
+
+    const prompt = [
+        translateSystemContext(),
+        'Here are some text messages between my partner and I:\n' + formatMessagesAsText(messages),
+        translatePrompt(userDraft, tone, context),
+    ].join('\n\n')
+
+    const body = {
+        model: config.model,
+        max_tokens: 1024,
+        temperature: config.temperature,
+        messages: [{ role: 'user', content: prompt }],
+    }
+
+    logger.info('Sending translate request to Anthropic')
+
+    try {
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': config.apiKey,
+                'anthropic-version': '2023-06-01',
+            },
+            body: JSON.stringify(body),
+        })
+
+        if (!response.ok) {
+            throw new Error(`Anthropic API error code ${response.status}: ${response.statusText}`)
+        }
+
+        const data = (await response.json()) as { content?: Array<{ text?: string }> }
+        const rawOutput = data.content?.[0]?.text || ''
+        const replies = extractReplies(rawOutput)
+        return { replies }
+    } catch (error) {
+        logger.error({ error }, 'Error in translateAnthropicDraft')
+        return { replies: ['(AI API error. Check your key and usage.)'] }
     }
 }

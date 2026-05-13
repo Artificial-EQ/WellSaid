@@ -27,13 +27,13 @@ describe('provider registry', () => {
         expect(providers.every((p) => p.isAvailable)).toBe(true)
     })
 
-    it('prefers khoj as default when available', async () => {
+    it('prefers openai as default when available', async () => {
         const { settings } = await import('$lib/config')
         settings.KHOJ_API_URL = 'http://khoj.test'
         settings.OPENAI_API_KEY = 'key'
 
         const { getDefaultProvider } = await loadRegistry()
-        expect(getDefaultProvider()).toBe('khoj')
+        expect(getDefaultProvider()).toBe('openai')
     })
 
     it('throws when no providers are configured', async () => {

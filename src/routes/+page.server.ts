@@ -1,10 +1,10 @@
-import { getAnthropicReply } from '$lib/anthropic'
+import { getAnthropicReply, translateAnthropicDraft } from '$lib/anthropic'
 import { getAllSettings, updateSetting } from '$lib/config'
-import { getGrokReply } from '$lib/grok'
+import { getGrokReply, translateGrokDraft } from '$lib/grok'
 import { queryMessagesDb } from '$lib/iMessages'
-import { getKhojReply } from '$lib/khoj'
+import { getKhojReply, translateKhojDraft } from '$lib/khoj'
 import { logger } from '$lib/logger'
-import { getOpenaiReply } from '$lib/openAi'
+import { getOpenaiReply, translateOpenaiDraft } from '$lib/openAi'
 import { DEFAULT_PROVIDER } from '$lib/provider'
 import { getAvailableProviders, hasMultipleProviders } from '$lib/providers/registry'
 import type { Message, ToneType } from '$lib/types'
@@ -78,6 +78,47 @@ export const actions: Actions = {
 
             return fail(500, {
                 error: 'Failed to generate suggestions',
+                details: err instanceof Error ? err.message : String(err),
+            })
+        }
+    },
+    translate: async ({ request }) => {
+        try {
+            const formData = await request.formData()
+            const messagesString = formData.get('messages') as string
+            const tone = formData.get('tone') as ToneType
+            const context = formData.get('context') as string
+            const provider = formData.get('provider') as string
+            const userDraft = formData.get('userDraft') as string
+
+            if (!messagesString || !tone || !userDraft?.trim()) {
+                return fail(400, { error: 'Missing messages, tone, or draft.' })
+            }
+
+            const translateFn =
+                provider === 'khoj'
+                    ? translateKhojDraft
+                    : provider === 'anthropic'
+                      ? translateAnthropicDraft
+                      : provider === 'grok'
+                        ? translateGrokDraft
+                        : translateOpenaiDraft
+
+            let messages: Message[]
+            try {
+                messages = JSON.parse(messagesString) as Message[]
+            } catch (err) {
+                logger.error({ err }, 'Failed to parse messages for translate')
+                return fail(400, { error: 'Invalid messages format.' })
+            }
+
+            const result = await translateFn(messages, tone, userDraft, context || '')
+            logger.debug({ result }, 'Translate result')
+            return result
+        } catch (err) {
+            logger.error({ err }, 'Error translating draft')
+            return fail(500, {
+                error: 'Failed to translate draft',
                 details: err instanceof Error ? err.message : String(err),
             })
         }
