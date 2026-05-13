@@ -1,6 +1,6 @@
 import { settings } from '$lib/config'
 import { khojPrompt, translateKhojPrompt } from '$lib/prompts'
-import type { Message, ToneType } from '$lib/types'
+import type { Message, ToneType, TranslateResult } from '$lib/types'
 import { extractReplies, parseSummaryToHumanReadable } from '$lib/utils'
 import { fetchRelevantHistory } from './history'
 import { logger } from './logger'
@@ -61,7 +61,7 @@ export const translateKhojDraft = async (
     tone: ToneType,
     userDraft: string,
     context: string
-): Promise<{ replies: string[] }> => {
+): Promise<TranslateResult> => {
     const prompt = translateKhojPrompt(messages, userDraft, tone, context)
     const body = {
         q: prompt,

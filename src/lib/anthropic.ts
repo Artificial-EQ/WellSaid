@@ -1,6 +1,6 @@
 import { settings } from '$lib/config'
 import { anthropicPrompt, translatePrompt, translateSystemContext } from '$lib/prompts'
-import type { Message, ToneType } from '$lib/types'
+import type { Message, ToneType, TranslateResult } from '$lib/types'
 import { extractReplies, formatMessagesAsText, parseSummaryToHumanReadable } from '$lib/utils'
 import { fetchRelevantHistory } from './history'
 import { logger } from './logger'
@@ -84,7 +84,7 @@ export const translateAnthropicDraft = async (
     tone: ToneType,
     userDraft: string,
     context: string
-): Promise<{ replies: string[] }> => {
+): Promise<TranslateResult> => {
     const config = getConfig()
 
     if (!config.apiKey) {
@@ -99,7 +99,7 @@ export const translateAnthropicDraft = async (
 
     const body = {
         model: config.model,
-        max_tokens: 1024,
+        max_tokens: 2048,
         temperature: config.temperature,
         messages: [{ role: 'user', content: prompt }],
     }

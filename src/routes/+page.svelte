@@ -301,7 +301,7 @@
                         <!-- Conversation summary -->
                         <section class="conversation">
                             <div class="summary">
-                                {#if showLoadingIndicators && !formState.ui.translating}
+                                {#if formState.ui.loading}
                                     <div class="loading-indicator">{summaryContent}</div>
                                 {:else}
                                     {summaryContent}
@@ -329,6 +329,15 @@
                                     placeholder="write your raw response here — unfiltered is fine"
                                 ></textarea>
                                 <div class="translate-controls">
+                                    {#if formState.form.userDraft.trim()}
+                                        <button
+                                            type="button"
+                                            class="clear-draft-button"
+                                            onclick={() => (formState.form.userDraft = '')}
+                                        >
+                                            clear
+                                        </button>
+                                    {/if}
                                     <button
                                         type="button"
                                         class="translate-button"
@@ -542,6 +551,22 @@
     .translate-controls {
         display: flex;
         justify-content: flex-end;
+        gap: 0.5rem;
+    }
+
+    .clear-draft-button {
+        border: none;
+        background-color: var(--light);
+        color: var(--primary-dark);
+        border-radius: var(--border-radius);
+        padding: 0.25rem 0.75rem;
+        cursor: pointer;
+        font-family: var(--body-font);
+    }
+
+    .clear-draft-button:hover {
+        background-color: var(--primary-dark);
+        color: var(--white);
     }
 
     .translate-button {

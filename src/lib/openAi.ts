@@ -2,7 +2,7 @@ import { settings } from '$lib/config'
 import { fetchRelevantHistory } from './history'
 import { logger } from './logger'
 import { openAiPrompt, systemContext, translatePrompt, translateSystemContext } from './prompts'
-import type { Message, OpenAIConfig, ToneType } from './types'
+import type { Message, OpenAIConfig, ToneType, TranslateResult } from './types'
 import { extractReplies, formatMessagesAsText, parseSummaryToHumanReadable } from './utils'
 
 const API_URL = 'https://api.openai.com/v1/chat/completions'
@@ -129,7 +129,7 @@ export const translateOpenaiDraft = async (
     tone: ToneType,
     userDraft: string,
     context: string
-): Promise<{ replies: string[] }> => {
+): Promise<TranslateResult> => {
     const config = getConfig()
 
     if (!config.apiKey) {

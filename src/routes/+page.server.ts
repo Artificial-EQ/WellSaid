@@ -14,7 +14,7 @@ import type { Actions, PageServerLoad } from './$types'
 const ONE_HOUR = 60 * 60 * 1000
 
 export const load: PageServerLoad = async ({ url }) => {
-    const lookBack = Number.parseFloat(url.searchParams.get('lookBackHours') || '1')
+    const lookBack = Math.min(Math.max(Number.parseFloat(url.searchParams.get('lookBackHours') || '1'), 0.25), 24)
     const end = new Date()
     const start = new Date(end.getTime() - lookBack * ONE_HOUR)
     const { messages } = await queryMessagesDb(start.toISOString(), end.toISOString())
