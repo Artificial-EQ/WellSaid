@@ -1,54 +1,65 @@
 <script lang="ts">
     let { replies = [], loading = false }: { replies: string[]; loading: boolean } = $props()
 
-    let copiedIndex = $state(-1)
+    let activeTab = $state(0)
+    let copied = $state(false)
+
+    const labels = ['Short', 'Medium', 'Long']
+
+    $effect(() => {
+        if (replies.length) activeTab = 0
+    })
+
+    async function copyActive() {
+        const text = replies[activeTab]
+        if (!text) return
+        try {
+            await navigator.clipboard.writeText(text)
+            copied = true
+            setTimeout(() => (copied = false), 2000)
+        } catch (err) {
+            console.error('Failed to copy:', err)
+        }
+    }
 </script>
-
-{#snippet copyButton(textToCopy: string, currentIndex: number)}
-    <button
-        class="copy-button"
-        onclick={async () => {
-            try {
-                await navigator.clipboard.writeText(textToCopy)
-                copiedIndex = currentIndex // Update the component-level state
-                setTimeout(() => {
-                    // Only reset if this button is still the one marked 'copied'
-                    if (copiedIndex === currentIndex) {
-                        copiedIndex = -1
-                    }
-                }, 2000)
-            } catch (err) {
-                console.error('Failed to copy text: ', err)
-            }
-        }}
-        aria-label="Copy to clipboard"
-    >
-        {#if copiedIndex === currentIndex}
-            ✓
-        {:else}
-            📋
-        {/if}
-    </button>
-{/snippet}
-
-{#snippet replySuggestion(replyContent: string, itemIndex: number)}
-    <div class="suggestion-item">
-        <div class="suggestion-content">{replyContent}</div>
-        {@render copyButton(replyContent, itemIndex)}
-    </div>
-{/snippet}
 
 <div class="suggestions">
     {#if loading}
-        <div class="loading-suggestions">
-            <div class="pulse-loader"></div>
-            <div class="pulse-loader"></div>
-            <div class="pulse-loader"></div>
+        <div class="skeleton-tabs">
+            {#each labels as label}
+                <div class="skeleton-tab">{label}</div>
+            {/each}
+        </div>
+        <div class="skeleton-card">
+            <div class="skeleton-line"></div>
+            <div class="skeleton-line short"></div>
         </div>
     {:else if replies.length > 0}
-        {#each replies as reply, i}
-            {@render replySuggestion(reply, i)}
-        {/each}
+        <div class="tab-bar" role="tablist">
+            {#each labels as label, i}
+                <button
+                    role="tab"
+                    aria-selected={activeTab === i}
+                    class="tab"
+                    class:active={activeTab === i}
+                    onclick={() => (activeTab = i)}
+                >
+                    {label}
+                </button>
+            {/each}
+        </div>
+        <div class="reply-card" role="tabpanel">
+            <div class="reply-content">{replies[activeTab]}</div>
+            <div class="card-footer">
+                <button class="copy-button" onclick={copyActive} aria-label="Copy to clipboard">
+                    {#if copied}
+                        ✓ Copied
+                    {:else}
+                        📋 Copy
+                    {/if}
+                </button>
+            </div>
+        </div>
     {:else}
         <div class="empty-state">
             <strong>¯\_(ツ)_/¯</strong>
@@ -61,84 +72,141 @@
         margin-top: 1rem;
     }
 
-    .suggestion-item {
-        padding: 1rem;
-        margin-bottom: 0.75rem;
-        border: 1px solid var(--light);
-        border-radius: var(--border-radius);
-        background-color: var(--white);
-        font-family: var(--reply-font);
-        line-height: 1.5;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    .tab-bar {
         display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
+        gap: 0;
+        border-bottom: 2px solid var(--border);
+        margin-bottom: 0;
+    }
+
+    .tab {
+        font-family: var(--body-font);
+        font-size: 0.875rem;
+        font-weight: 500;
+        padding: 0.5rem 1rem;
+        border: none;
+        background: none;
+        color: var(--text-muted);
+        cursor: pointer;
+        position: relative;
+        transition: color 0.15s;
+    }
+
+    .tab::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: var(--accent);
+        opacity: 0;
+        transition: opacity 0.15s;
+    }
+
+    .tab.active {
+        color: var(--accent);
+    }
+
+    .tab.active::after {
+        opacity: 1;
+    }
+
+    .tab:hover:not(.active) {
+        color: var(--text);
+    }
+
+    .reply-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-top: none;
+        border-radius: 0 0 var(--border-radius) var(--border-radius);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
+
+    .reply-content {
+        padding: 1rem;
+        line-height: 1.6;
+        color: var(--text);
+        min-height: 4rem;
+    }
+
+    .card-footer {
+        display: flex;
+        justify-content: flex-end;
+        padding: 0.5rem 0.75rem;
+        border-top: 1px solid var(--border);
     }
 
     .copy-button {
-        border: none;
-        background-color: transparent;
-        color: var(--primary-light);
-        cursor: pointer;
-        padding: 0.5rem;
+        font-family: var(--body-font);
+        font-size: 0.85rem;
+        padding: 0.35rem 0.75rem;
         border-radius: var(--border-radius);
-        transition: all 0.2s ease;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        min-width: var(--min-touch-size);
+        border: 1px solid var(--border);
+        background: var(--surface);
+        color: var(--text);
+        cursor: pointer;
+        transition: background 0.15s;
         min-height: var(--min-touch-size);
-        font-size: 1.5rem;
     }
 
-    .copy-button:hover,
-    .copy-button:active {
-        background-color: var(--light);
-        color: var(--primary-dark);
+    .copy-button:hover {
+        background: var(--accent-soft);
+        color: var(--accent);
     }
 
     .empty-state {
-        color: var(--light);
+        color: var(--text-muted);
         text-align: center;
-        font-weight: 100;
+        padding: 2rem;
     }
 
-    .loading-suggestions {
+    /* Skeleton loading */
+    .skeleton-tabs {
         display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 1rem;
-        padding: 1.5rem;
+        gap: 0;
+        border-bottom: 2px solid var(--border);
     }
 
-    .pulse-loader {
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
-        background-color: var(--light);
-        animation: pulse 1.5s ease-in-out infinite;
+    .skeleton-tab {
+        font-size: 0.875rem;
+        font-weight: 500;
+        padding: 0.5rem 1rem;
+        color: transparent;
+        background: var(--surface);
+        border-radius: 4px 4px 0 0;
+        margin-right: 4px;
+        animation: skeleton-pulse 1.5s ease-in-out infinite;
     }
 
-    .pulse-loader:nth-child(2) {
-        animation-delay: 0.3s;
+    .skeleton-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-top: none;
+        border-radius: 0 0 var(--border-radius) var(--border-radius);
+        padding: 1rem;
     }
 
-    .pulse-loader:nth-child(3) {
-        animation-delay: 0.6s;
+    .skeleton-line {
+        height: 14px;
+        background: var(--surface);
+        border-radius: 4px;
+        margin-bottom: 0.75rem;
+        animation: skeleton-pulse 1.5s ease-in-out infinite;
     }
 
-    @keyframes pulse {
-        0% {
-            transform: scale(0.8);
+    .skeleton-line.short {
+        width: 60%;
+    }
+
+    @keyframes skeleton-pulse {
+        0%,
+        100% {
             opacity: 0.5;
         }
         50% {
-            transform: scale(1.2);
             opacity: 1;
-        }
-        100% {
-            transform: scale(0.8);
-            opacity: 0.5;
         }
     }
 </style>

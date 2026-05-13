@@ -7,6 +7,7 @@
     import RawMessages from '$lib/components/RawMessages.svelte'
     import ReplySuggestions from '$lib/components/ReplySuggestions.svelte'
     import SettingsForm from '$lib/components/SettingsForm.svelte'
+    import ThemePicker from '$lib/components/ThemePicker.svelte'
     import ToneSelector from '$lib/components/ToneSelector.svelte'
     import type { Setting } from '$lib/config'
     import type { ProviderConfig } from '$lib/providers/registry'
@@ -48,6 +49,7 @@
     })
 
     let activeTab = $state<'main' | 'settings'>('main')
+    let themePicker: ThemePicker
 
     let additionalContextExpanded = $state(false)
 
@@ -122,6 +124,7 @@
         if (!browser) return
         const storedDraft = localStorage.getItem(LOCAL_STORAGE_DRAFT_KEY)
         if (storedDraft) formState.form.userDraft = storedDraft
+        themePicker?.loadSaved()
     })
 
     $effect(() => {
@@ -326,7 +329,7 @@
                                     class="draft-input"
                                     rows="4"
                                     bind:value={formState.form.userDraft}
-                                    placeholder="write your raw response here — unfiltered is fine"
+                                    placeholder="Write your raw, unfiltered response here. Go nuts. We'll sort it out"
                                 ></textarea>
                                 <div class="translate-controls">
                                     {#if formState.form.userDraft.trim()}
@@ -392,6 +395,8 @@
     </div>
 </main>
 
+<ThemePicker bind:this={themePicker} />
+
 <style>
     /* ===== Layout & Structure ===== */
     main.app {
@@ -411,9 +416,10 @@
         width: 100%;
         max-width: 600px;
         padding: 1rem;
-        border: 1px solid var(--light);
+        border: 1px solid var(--border);
         border-radius: var(--border-radius) 0 var(--border-radius) var(--border-radius);
-        background-color: var(--primary-light);
+        background-color: var(--card);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
         margin: 0;
         min-height: calc(100vh - 200px);
         overflow-y: auto;
@@ -426,15 +432,17 @@
 
     header h1 {
         font-family: var(--heading-font);
-        font-size: 3rem;
-        text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.1);
+        font-size: 2.6rem;
+        color: var(--accent);
+        text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.08);
         margin-top: 1rem;
         margin-bottom: 0;
     }
 
     header i {
         font-style: italic;
-        font-size: 1rem;
+        font-size: 0.95rem;
+        color: var(--text-muted);
         display: block;
         margin-bottom: 1.25rem;
     }
@@ -457,23 +465,23 @@
 
     .tab-bar button {
         font-size: 0.9rem;
-        background-color: var(--gray);
-        color: var(--white);
+        background-color: var(--surface);
+        color: var(--text-muted);
         padding: 0.5rem 1rem;
         border-radius: var(--border-radius) var(--border-radius) 0 0;
-        border: 1px solid var(--light);
+        border: 1px solid var(--border);
         border-bottom: none;
         cursor: pointer;
-        opacity: 0.8;
         margin-left: 2px;
+        transition: background-color 0.15s, color 0.15s;
     }
 
     .tab-bar button.active {
-        opacity: 1;
-        background-color: var(--primary-light);
-        color: var(--primary-dark);
-        border-color: var(--light);
+        background-color: var(--card);
+        color: var(--accent);
+        border-color: var(--border);
         border-bottom: none;
+        font-weight: 600;
     }
 
     /* ===== Form Consistency ===== */
@@ -489,13 +497,13 @@
 
     /* ===== Conversation Section ===== */
     .conversation {
-        background-color: var(--light);
+        background-color: var(--accent-soft);
         min-height: 20px;
-        transition: opacity 0.3s;
+        transition: opacity 0.3s, background-color 0.2s;
         border-radius: var(--border-radius);
         padding: 1rem;
         margin-bottom: 1rem;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
     }
 
     .summary {
@@ -511,7 +519,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        color: var(--gray);
+        color: var(--text-muted);
         font-style: italic;
         padding: 1rem;
     }
@@ -528,20 +536,20 @@
         font-family: var(--label-font);
         font-weight: 500;
         font-size: 0.9rem;
-        color: var(--primary-dark);
+        color: var(--text);
     }
 
     .draft-input {
-        font-family: var(--label-font);
+        font-family: var(--body-font);
         font-size: 1rem;
         width: 100%;
         padding: 0.75rem;
-        border: 1px solid var(--light);
+        border: 1px solid var(--border);
         border-radius: var(--border-radius);
         resize: vertical;
         min-height: 80px;
-        color: var(--primary-dark);
-        background-color: var(--white);
+        color: var(--text);
+        background-color: var(--card);
         text-size-adjust: 100%;
         -webkit-text-size-adjust: 100%;
         touch-action: manipulation;
@@ -555,24 +563,25 @@
     }
 
     .clear-draft-button {
-        border: none;
-        background-color: var(--light);
-        color: var(--primary-dark);
+        border: 1px solid var(--border);
+        background-color: var(--surface);
+        color: var(--text-muted);
         border-radius: var(--border-radius);
         padding: 0.25rem 0.75rem;
         cursor: pointer;
         font-family: var(--body-font);
+        transition: background-color 0.15s;
     }
 
     .clear-draft-button:hover {
-        background-color: var(--primary-dark);
-        color: var(--white);
+        background-color: var(--border);
+        color: var(--text);
     }
 
     .translate-button {
-        background-color: var(--primary-dark);
-        color: var(--white);
-        border: 1px solid var(--light);
+        background-color: var(--accent);
+        color: var(--accent-text);
+        border: none;
         border-radius: var(--border-radius);
         font-family: var(--body-font);
         font-weight: 500;
@@ -582,21 +591,17 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        transition:
-            background-color 0.2s,
-            transform 0.1s;
+        transition: opacity 0.2s;
     }
 
     .translate-button:hover:not(:disabled) {
-        background-color: var(--primary-light);
-        color: var(--primary-dark);
+        opacity: 0.88;
     }
 
     .translate-button:disabled {
-        background-color: var(--light);
-        color: var(--gray);
+        background-color: var(--surface);
+        color: var(--text-muted);
         cursor: not-allowed;
-        border-color: var(--light);
     }
 
     /* ===== Settings Styling ===== */
@@ -611,24 +616,24 @@
     .no-providers-message {
         text-align: center;
         padding: 2rem;
-        color: var(--primary-dark);
+        color: var(--text);
     }
 
     .no-providers-message h2 {
-        color: var(--primary-dark);
+        color: var(--text);
         margin-bottom: 1rem;
         font-size: 1.2rem;
     }
 
     .no-providers-message p {
         margin-bottom: 1.5rem;
-        color: var(--gray);
+        color: var(--text-muted);
         line-height: 1.4;
     }
 
     .settings-link-button {
-        background-color: var(--primary-dark);
-        color: var(--white);
+        background-color: var(--accent);
+        color: var(--accent-text);
         border: none;
         padding: 0.75rem 1.5rem;
         border-radius: var(--border-radius);
@@ -636,11 +641,10 @@
         font-family: var(--body-font);
         font-weight: bold;
         font-size: 1rem;
-        transition: background-color 0.2s ease;
+        transition: opacity 0.2s ease;
     }
 
     .settings-link-button:hover {
-        background-color: var(--primary-light);
-        color: var(--primary-dark);
+        opacity: 0.88;
     }
 </style>

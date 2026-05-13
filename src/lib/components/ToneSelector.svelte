@@ -27,8 +27,11 @@
     .tone-selector {
         display: flex;
         flex-wrap: wrap;
-        gap: 0.25rem;
-        background-color: var(--primary-light);
+        gap: 0.4rem;
+    }
+
+    .tone-selector label input[type='radio'] {
+        display: none;
     }
 
     .tone-selector label {
@@ -36,43 +39,30 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        padding: 0.05rem 0.5rem;
-        border: 1px solid var(--primary-light);
-        border-radius: var(--border-radius);
+        padding: 0.4rem 1rem;
+        border: 1.5px solid var(--border);
+        border-radius: 999px;
         cursor: pointer;
-        font-size: 0.73rem;
+        font-size: 0.875rem;
+        color: var(--text-muted);
+        background-color: var(--card);
         transition:
-            background-color 0.2s,
-            color 0.2s,
-            box-shadow 0.2s;
-        min-height: 28px;
-        min-width: 60px;
-        background-color: var(--light);
+            background-color 0.15s,
+            color 0.15s,
+            border-color 0.15s;
+        min-height: 36px;
+        min-width: 70px;
+    }
+
+    .tone-selector label:hover:not(.active) {
+        border-color: var(--accent);
+        color: var(--accent);
     }
 
     .tone-selector label.active {
-        background-color: var(--primary-dark);
-        color: var(--white);
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    }
-
-    @media (min-width: 768px) {
-        .tone-selector {
-            gap: 0.75rem;
-            justify-content: flex-start;
-        }
-
-        .tone-selector label {
-            padding: 0.75rem 1rem;
-            font-size: 1rem;
-            min-height: var(--min-touch-size);
-            min-width: 70px;
-        }
-    }
-
-    @media (max-width: 767px) {
-        .tone-selector label input[type='radio'] {
-            display: none;
-        }
+        background-color: var(--accent);
+        border-color: var(--accent);
+        color: var(--accent-text);
+        font-weight: 500;
     }
 </style>
