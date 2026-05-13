@@ -38,7 +38,7 @@ const defaultSettings: Record<string, { value?: string; description: string }> =
         value: env.OPENAI_API_KEY,
         description: 'Available at https://platform.openai.com/api-keys',
     },
-    OPENAI_MODEL: { value: env.OPENAI_MODEL, description: 'gpt-4 or any other OpenAI model' },
+    OPENAI_MODEL: { value: env.OPENAI_MODEL, description: 'gpt-4o or any other OpenAI model' },
     OPENAI_TEMPERATURE: {
         value: env.OPENAI_TEMPERATURE,
         description: 'Controls the randomness of the responses',

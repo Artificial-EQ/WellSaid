@@ -6,7 +6,7 @@ import type { Message, OpenAIConfig, ToneType } from './types'
 import { extractReplies, formatMessagesAsText, parseSummaryToHumanReadable } from './utils'
 
 const API_URL = 'https://api.openai.com/v1/chat/completions'
-const DEFAULT_MODEL = 'gpt-4'
+const DEFAULT_MODEL = 'gpt-4o'
 const DEFAULT_TEMPERATURE = 0.5
 
 const getConfig = (): OpenAIConfig => ({
