@@ -274,11 +274,11 @@
     </header>
 
     <nav class="tab-bar">
-        <button class:active={activeTab === 'main'} onclick={() => (activeTab = 'main')}>
-            home
+        <button class:active={activeTab === 'main'} onclick={() => (activeTab = 'main')} aria-label="Home">
+            💬
         </button>
-        <button class:active={activeTab === 'settings'} onclick={() => (activeTab = 'settings')}>
-            settings
+        <button class:active={activeTab === 'settings'} onclick={() => (activeTab = 'settings')} aria-label="Settings">
+            ⚙️
         </button>
     </nav>
 
