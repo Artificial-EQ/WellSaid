@@ -7,7 +7,7 @@ import { logger } from '$lib/logger'
 import { getOpenaiReply, translateOpenaiDraft } from '$lib/openAi'
 import { DEFAULT_PROVIDER } from '$lib/provider'
 import { getAvailableProviders, hasMultipleProviders } from '$lib/providers/registry'
-import type { Message, ToneType } from '$lib/types'
+import { TONES, type Message, type ToneType } from '$lib/types'
 import { fail } from '@sveltejs/kit'
 import type { Actions, PageServerLoad } from './$types'
 
@@ -41,6 +41,10 @@ export const actions: Actions = {
 
             if (!messagesString || !tone) {
                 return fail(400, { error: 'Invalid request format: Missing messages or tone.' })
+            }
+
+            if (!TONES.includes(tone)) {
+                return fail(400, { error: `Invalid tone. Must be one of: ${TONES.join(', ')}.` })
             }
 
             const getReplies =
@@ -95,6 +99,10 @@ export const actions: Actions = {
                 return fail(400, { error: 'Missing messages, tone, or draft.' })
             }
 
+            if (!TONES.includes(tone)) {
+                return fail(400, { error: `Invalid tone. Must be one of: ${TONES.join(', ')}.` })
+            }
+
             const translateFn =
                 provider === 'khoj'
                     ? translateKhojDraft
@@ -110,6 +118,10 @@ export const actions: Actions = {
             } catch (err) {
                 logger.error({ err }, 'Failed to parse messages for translate')
                 return fail(400, { error: 'Invalid messages format.' })
+            }
+
+            if (!Array.isArray(messages)) {
+                return fail(400, { error: 'Invalid messages format: Expected an array of messages.' })
             }
 
             const result = await translateFn(messages, tone, userDraft, context || '')
