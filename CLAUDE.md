@@ -29,8 +29,9 @@ yarn prune:list   # knip (all files)
 - `src/lib/iMessages.ts` — reads `~/Library/Messages/chat.db`; requires Full Disk Access for the terminal/editor
 - `src/lib/prompts.ts` — AI prompt construction
 - `src/lib/openAi.ts`, `anthropic.ts`, `grok.ts`, `khoj.ts` — per-provider API clients
-- `src/routes/+page.server.ts` — main form actions (summarize, suggest replies)
+- `src/routes/+page.server.ts` — three form actions: `generate` (summary + replies), `translate` (raw draft → polished short/medium/long), `settings`
 - `src/routes/login/` — credential check, sets `auth_token` JWT cookie
+- `src/lib/components/ThemePicker.svelte` — floating accent/dark-mode picker; call `loadSaved()` on mount via `bind:this` to restore localStorage prefs
 
 ## Settings
 
@@ -60,6 +61,12 @@ Place `cert.pem` and `key.pem` in `.certs/` at project root — Vite auto-detect
 - Terminal and/or editor must have **Full Disk Access** (System Settings → Privacy & Security)
 - Not deployable to a server; `yarn build && yarn preview` is the "production" mode
 
+## UI theming
+
+- Color system: OKLch semantic tokens in `src/variables.css` (`--bg`, `--surface`, `--card`, `--text`, `--border`, `--accent`, `--accent-soft`, `--accent-text`)
+- Dark mode: `[data-theme="dark"]` on `<html>`; accent variants via `[data-accent="sage|indigo|amber|rose"]`
+- Legacy aliases (`--primary-dark`, `--primary-light`, `--light`, `--white`, `--gray`) exist for backwards compat — prefer semantic tokens in new code
+
 ## Adding a provider
 
-Add an entry to `PROVIDER_REGISTRY` in `src/lib/providers/registry.ts`, implement a client module in `src/lib/`, and wire it into the route action.
+Add an entry to `PROVIDER_REGISTRY` in `src/lib/providers/registry.ts`, implement a client module in `src/lib/`, and wire it into the `generate`, `translate`, and provider-selector logic in `+page.server.ts` and `+page.svelte`.
