@@ -28,8 +28,8 @@
 <style>
     details.context-details {
         text-align: left;
-        border: 1px solid var(--light);
-        background-color: var(--white);
+        border: 1px solid var(--border);
+        background-color: var(--card);
         border-radius: var(--border-radius);
         padding: 1rem;
         margin-bottom: 1rem;
@@ -39,38 +39,40 @@
     details summary {
         cursor: pointer;
         font-weight: 500;
+        color: var(--text);
     }
 
     textarea.context-input {
-        font-family: var(--label-font);
-        font-size: 1rem; /* Ensure minimum font size */
+        font-family: var(--body-font);
+        font-size: 1rem;
         width: 100%;
         margin-top: 0.75rem;
         padding: 0.75rem;
-        border: 1px solid var(--light);
+        border: 1px solid var(--border);
         border-radius: var(--border-radius);
         resize: vertical;
         min-height: 80px;
-        color: var(--primary-dark);
-        /* Prevent iOS zooming */
+        color: var(--text);
+        background-color: var(--card);
         text-size-adjust: 100%;
         -webkit-text-size-adjust: 100%;
-        /* Ensure proper touch handling */
         touch-action: manipulation;
     }
 
     .clear-button {
-        border: none;
-        background-color: var(--light);
-        color: var(--primary-dark);
+        border: 1px solid var(--border);
+        background-color: var(--surface);
+        color: var(--text-muted);
         border-radius: var(--border-radius);
         padding: 0.25rem 0.75rem;
         cursor: pointer;
+        font-family: var(--body-font);
+        transition: background-color 0.15s;
     }
 
     .clear-button:hover {
-        background-color: var(--primary-dark);
-        color: var(--white);
+        background-color: var(--border);
+        color: var(--text);
     }
 
     .button-container {
