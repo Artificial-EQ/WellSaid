@@ -6,7 +6,7 @@ import type { Message, ToneType, TranslateResult } from './types'
 import { extractReplies, formatMessagesAsText, parseSummaryToHumanReadable } from './utils'
 
 const API_URL = 'https://grok.x.ai/api/chat/completions'
-const DEFAULT_MODEL = 'grok-1'
+const DEFAULT_MODEL = 'grok-3'
 const DEFAULT_TEMPERATURE = 0.5
 
 const getConfig = () => ({

@@ -6,7 +6,7 @@ import { fetchRelevantHistory } from './history'
 import { logger } from './logger'
 
 const API_URL = 'https://api.anthropic.com/v1/messages'
-const DEFAULT_MODEL = 'claude-3-opus-20240229'
+const DEFAULT_MODEL = 'claude-opus-4-7'
 const DEFAULT_TEMPERATURE = 0.5
 
 const getConfig = () => ({
