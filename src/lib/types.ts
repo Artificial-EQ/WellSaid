@@ -26,6 +26,10 @@ export interface OpenAIChatMessage {
     content: string
 }
 
+export interface TranslateResult {
+    replies: string[]
+}
+
 export interface OpenAIConfig {
     model: string
     temperature: number

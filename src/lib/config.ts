@@ -38,7 +38,7 @@ const defaultSettings: Record<string, { value?: string; description: string }> =
         value: env.OPENAI_API_KEY,
         description: 'Available at https://platform.openai.com/api-keys',
     },
-    OPENAI_MODEL: { value: env.OPENAI_MODEL, description: 'gpt-4 or any other OpenAI model' },
+    OPENAI_MODEL: { value: env.OPENAI_MODEL, description: 'gpt-4o or any other OpenAI model' },
     OPENAI_TEMPERATURE: {
         value: env.OPENAI_TEMPERATURE,
         description: 'Controls the randomness of the responses',
@@ -61,7 +61,7 @@ const defaultSettings: Record<string, { value?: string; description: string }> =
     },
     ANTHROPIC_MODEL: {
         value: env.ANTHROPIC_MODEL,
-        description: 'claude-3-opus-20240229 or another Anthropic model',
+        description: 'claude-opus-4-7 or another Anthropic model',
     },
     ANTHROPIC_TEMPERATURE: {
         value: env.ANTHROPIC_TEMPERATURE,
@@ -71,7 +71,7 @@ const defaultSettings: Record<string, { value?: string; description: string }> =
         value: env.GROK_API_KEY,
         description: 'Available at https://x.ai',
     },
-    GROK_MODEL: { value: env.GROK_MODEL, description: 'grok-1 or another Grok model' },
+    GROK_MODEL: { value: env.GROK_MODEL, description: 'grok-3 or another Grok model' },
     GROK_TEMPERATURE: {
         value: env.GROK_TEMPERATURE,
         description: "Controls the randomness of Grok's responses",

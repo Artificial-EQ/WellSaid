@@ -58,3 +58,48 @@ export const anthropicPrompt = (messages: Message[], tone: ToneType, context: st
         'Here are some text messages between my partner and I:\n' + formatMessagesAsText(messages),
         buildPrompt(tone, context),
     ].join('\n')
+
+const translateInstructions = [
+    'You are helping me translate a raw emotional draft into a polished, rational message.',
+    'You already know this person and this conversation from the context above.',
+    'Preserve my intent and voice. Remove reactivity. Soften sharp edges so the message lands well.',
+    'Do NOT invent new ideas — only refine what I have written.',
+].join('\n')
+
+const translateResponseFormat = [
+    'Format your response exactly as follows:',
+    '',
+    'Reply 1 (Short): [1-2 sentence version]',
+    '',
+    'Reply 2 (Medium): [3-4 sentence version]',
+    '',
+    'Reply 3 (Long): [5+ sentence version]',
+].join('\n')
+
+export const translateSystemContext = (): string =>
+    [systemContext(), translateInstructions].filter(Boolean).join('\n\n')
+
+export const translatePrompt = (userDraft: string, tone: string, context: string): string => {
+    const lines = [
+        `Here is my raw draft:\n"""\n${userDraft}\n"""`,
+        '',
+        `Rewrite this as three versions in a ${tone} tone.`,
+    ]
+    if (context) {
+        lines.push('', `Additional context: ${context}`)
+    }
+    lines.push('', translateResponseFormat)
+    return lines.join('\n')
+}
+
+export const translateKhojPrompt = (
+    messages: Message[],
+    userDraft: string,
+    tone: ToneType,
+    context: string
+): string =>
+    [
+        translateSystemContext(),
+        'Here are some text messages between my partner and I:\n' + formatMessagesAsText(messages),
+        translatePrompt(userDraft, tone, context),
+    ].join('\n')

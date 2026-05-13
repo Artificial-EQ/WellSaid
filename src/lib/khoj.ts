@@ -1,6 +1,6 @@
 import { settings } from '$lib/config'
-import { khojPrompt } from '$lib/prompts'
-import type { Message, ToneType } from '$lib/types'
+import { khojPrompt, translateKhojPrompt } from '$lib/prompts'
+import type { Message, ToneType, TranslateResult } from '$lib/types'
 import { extractReplies, parseSummaryToHumanReadable } from '$lib/utils'
 import { fetchRelevantHistory } from './history'
 import { logger } from './logger'
@@ -53,5 +53,40 @@ export const getKhojReply = async (
             replies: ['(AI API error. Check your key and usage.)'],
             messageCount: messages.length,
         }
+    }
+}
+
+export const translateKhojDraft = async (
+    messages: Message[],
+    tone: ToneType,
+    userDraft: string,
+    context: string
+): Promise<TranslateResult> => {
+    const prompt = translateKhojPrompt(messages, userDraft, tone, context)
+    const body = {
+        q: prompt,
+        ...(settings.KHOJ_AGENT ? { agent: settings.KHOJ_AGENT } : {}),
+    }
+
+    logger.info('Sending translate request to Khoj')
+
+    try {
+        const khojRes = await fetch(khojApiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+        })
+
+        if (!khojRes.ok) {
+            throw new Error(`Khoj API returned ${khojRes.status}`)
+        }
+
+        const data = await khojRes.json()
+        const rawOutput = data.response || ''
+        const replies = extractReplies(rawOutput)
+        return { replies }
+    } catch (err: unknown) {
+        logger.error({ error: err }, 'Error in translateKhojDraft')
+        return { replies: ['(AI API error. Check your key and usage.)'] }
     }
 }

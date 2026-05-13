@@ -1,12 +1,12 @@
 import { settings } from '$lib/config'
 import { fetchRelevantHistory } from './history'
 import { logger } from './logger'
-import { openAiPrompt, systemContext } from './prompts'
-import type { Message, OpenAIConfig, ToneType } from './types'
+import { openAiPrompt, systemContext, translatePrompt, translateSystemContext } from './prompts'
+import type { Message, OpenAIConfig, ToneType, TranslateResult } from './types'
 import { extractReplies, formatMessagesAsText, parseSummaryToHumanReadable } from './utils'
 
 const API_URL = 'https://api.openai.com/v1/chat/completions'
-const DEFAULT_MODEL = 'gpt-4'
+const DEFAULT_MODEL = 'gpt-4o'
 const DEFAULT_TEMPERATURE = 0.5
 
 const getConfig = (): OpenAIConfig => ({
@@ -121,5 +121,57 @@ export const getOpenaiReply = async (
             summary: '',
             replies: ['(AI API error. Check your key and usage.)'],
         }
+    }
+}
+
+export const translateOpenaiDraft = async (
+    messages: Message[],
+    tone: ToneType,
+    userDraft: string,
+    context: string
+): Promise<TranslateResult> => {
+    const config = getConfig()
+
+    if (!config.apiKey) {
+        return { replies: ['OpenAI API key is not configured.'] }
+    }
+
+    const body = {
+        model: config.model,
+        messages: [
+            { role: 'system', content: translateSystemContext() },
+            { role: 'user', content: formatMessagesAsText(messages) },
+            { role: 'user', content: translatePrompt(userDraft, tone, context) },
+        ],
+        temperature: config.temperature,
+        ...(config.topP && { top_p: config.topP }),
+        ...(config.frequencyPenalty && { frequency_penalty: config.frequencyPenalty }),
+        ...(config.presencePenalty && { presence_penalty: config.presencePenalty }),
+        response_format: { type: 'text' },
+    }
+
+    logger.info('Sending translate request to OpenAI')
+
+    try {
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${config.apiKey}`,
+            },
+            body: JSON.stringify(body),
+        })
+
+        if (!response.ok) {
+            throw new Error(`OpenAI API error code ${response.status}: ${response.statusText}`)
+        }
+
+        const data = await response.json()
+        const rawOutput = data.choices[0]?.message?.content || ''
+        const replies = extractReplies(rawOutput)
+        return { replies }
+    } catch (error) {
+        logger.error({ error }, 'Error in translateOpenaiDraft')
+        return { replies: ['(AI API error. Check your key and usage.)'] }
     }
 }
