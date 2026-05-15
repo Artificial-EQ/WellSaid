@@ -49,7 +49,11 @@
         },
     })
 
-    let activeTab = $state<'main' | 'settings'>('main')
+    let activeTab = $state<'main' | 'settings' | 'profiles'>('main')
+
+    const profileKeys = ['PARTNER_NAME', 'PARTNER_STORY', 'PARTNER_TRIGGERS', 'PARTNER_NEEDS', 'MY_STORY', 'MY_TRIGGERS', 'MY_NEEDS']
+    const profileSettings = $derived(data.settings.filter((s: Setting) => profileKeys.includes(s.key)))
+    const generalSettings = $derived(data.settings.filter((s: Setting) => !profileKeys.includes(s.key)))
     let themePicker: ThemePicker
 
     let additionalContextExpanded = $state(false)
@@ -280,6 +284,9 @@
         <button class:active={activeTab === 'main'} onclick={() => (activeTab = 'main')} aria-label="Home">
             💬
         </button>
+        <button class:active={activeTab === 'profiles'} onclick={() => (activeTab = 'profiles')} aria-label="Profiles">
+            🫂
+        </button>
         <button class:active={activeTab === 'settings'} onclick={() => (activeTab = 'settings')} aria-label="Settings">
             ⚙️
         </button>
@@ -389,9 +396,13 @@
                         </button>
                     </div>
                 {/if}
+            {:else if activeTab === 'profiles'}
+                <section class="settings-section">
+                    <SettingsForm settings={profileSettings} {form} />
+                </section>
             {:else}
                 <section class="settings-section">
-                    <SettingsForm settings={data.settings} {form} />
+                    <SettingsForm settings={generalSettings} {form} />
                 </section>
             {/if}
         </div>
