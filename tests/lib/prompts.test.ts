@@ -1,11 +1,14 @@
+import * as config from '$lib/config'
 import { khojPrompt, openAiPrompt, systemContext } from '$lib/prompts'
 import type { Message } from '$lib/types'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Mock configuration setting
 vi.mock('$lib/config', () => ({
     settings: { CUSTOM_CONTEXT: 'Test custom context for prompts' },
 }))
+
+const mockSettings = vi.mocked(config).settings as Record<string, string>
 
 describe('prompts', () => {
     describe('PERMANENT_CONTEXT', () => {
@@ -14,6 +17,84 @@ describe('prompts', () => {
             expect(systemContext()).toContain(
                 'mimic my specific vocabulary, sentence structure, and communication style when suggesting replies'
             )
+        })
+    })
+
+    describe('systemContext with profiles', () => {
+        beforeEach(() => {
+            // Reset all profile fields to empty between tests
+            mockSettings.CUSTOM_CONTEXT = ''
+            mockSettings.PARTNER_NAME = ''
+            mockSettings.PARTNER_STORY = ''
+            mockSettings.PARTNER_TRIGGERS = ''
+            mockSettings.PARTNER_NEEDS = ''
+            mockSettings.MY_STORY = ''
+            mockSettings.MY_TRIGGERS = ''
+            mockSettings.MY_NEEDS = ''
+        })
+
+        it('produces no profile section when all profile fields are empty', () => {
+            const result = systemContext()
+            expect(result).not.toContain('About')
+            expect(result).not.toContain('What tends to activate')
+            expect(result).not.toContain('What helps them feel safe')
+        })
+
+        it('includes partner section when PARTNER_STORY is set', () => {
+            mockSettings.PARTNER_NAME = 'Alex'
+            mockSettings.PARTNER_STORY = 'They learned early that love had to be earned.'
+            const result = systemContext()
+            expect(result).toContain('About Alex:')
+            expect(result).toContain('They learned early that love had to be earned.')
+        })
+
+        it('falls back to "my partner" when PARTNER_NAME is empty', () => {
+            mockSettings.PARTNER_STORY = 'They learned early that love had to be earned.'
+            const result = systemContext()
+            expect(result).toContain('About my partner:')
+        })
+
+        it('includes triggers and needs only when set', () => {
+            mockSettings.PARTNER_NAME = 'Alex'
+            mockSettings.PARTNER_STORY = 'Core story.'
+            mockSettings.PARTNER_TRIGGERS = 'Feeling dismissed.'
+            const result = systemContext()
+            expect(result).toContain('What tends to activate them: Feeling dismissed.')
+            expect(result).not.toContain('What helps them feel safe')
+        })
+
+        it('includes my section when MY_STORY is set', () => {
+            mockSettings.MY_STORY = 'I learned to be self-sufficient early on.'
+            const result = systemContext()
+            expect(result).toContain('About me:')
+            expect(result).toContain('I learned to be self-sufficient early on.')
+        })
+
+        it('includes both partner and my sections when both are set', () => {
+            mockSettings.PARTNER_NAME = 'Alex'
+            mockSettings.PARTNER_STORY = 'Partner story.'
+            mockSettings.MY_STORY = 'My story.'
+            const result = systemContext()
+            expect(result).toContain('About Alex:')
+            expect(result).toContain('About me:')
+        })
+
+        it('includes CUSTOM_CONTEXT before profile sections', () => {
+            mockSettings.CUSTOM_CONTEXT = 'Act as a therapist.'
+            mockSettings.PARTNER_STORY = 'Partner story.'
+            const result = systemContext()
+            expect(result.indexOf('Act as a therapist.')).toBeLessThan(result.indexOf('About'))
+        })
+
+        it('uses PARTNER_NAME in core context message labeling instruction', () => {
+            mockSettings.PARTNER_NAME = 'Jordan'
+            const result = systemContext()
+            expect(result).toContain('messages from Jordan are marked with their name')
+        })
+
+        it('falls back gracefully in core context when PARTNER_NAME is empty', () => {
+            const result = systemContext()
+            expect(result).toContain('messages from my partner are marked with their name')
         })
     })
 

@@ -100,6 +100,7 @@ describe('root page server', () => {
                 },
             ],
             settings: [],
+            partnerName: '',
         })
     })
 

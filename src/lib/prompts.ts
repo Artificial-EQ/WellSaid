@@ -2,13 +2,43 @@ import { settings } from '$lib/config'
 import type { Message, ToneType } from './types'
 import { formatMessagesAsText } from './utils'
 
-const coreContext = [
-    'You will see a conversation where messages from me are marked "me:" and messages from my partner are marked with their name.',
-    'Analyze my messages carefully to mimic my specific vocabulary, sentence structure, and communication style when suggesting replies.',
-    'Additional context about recent conversation history is provided below. Use this to understand the current situation and tone, but focus your reply on the most recent messages.',
-    'Do not summarize the history - it is only for context.',
-    'I will also provide a desired tone and may include extra context. Always incorporate both when crafting replies.',
-].join('\n')
+const getCoreContext = () => {
+    const name = settings.PARTNER_NAME || 'my partner'
+    return [
+        `You will see a conversation where messages from me are marked "me:" and messages from ${name} are marked with their name.`,
+        'Analyze my messages carefully to mimic my specific vocabulary, sentence structure, and communication style when suggesting replies.',
+        'Additional context about recent conversation history is provided below. Use this to understand the current situation and tone, but focus your reply on the most recent messages.',
+        'Do not summarize the history - it is only for context.',
+        'I will also provide a desired tone and may include extra context. Always incorporate both when crafting replies.',
+    ].join('\n')
+}
+
+const buildProfileContext = (): string => {
+    const name = settings.PARTNER_NAME || 'my partner'
+    const sections: string[] = []
+
+    const partnerParts = [
+        settings.PARTNER_STORY,
+        settings.PARTNER_TRIGGERS && `What tends to activate them: ${settings.PARTNER_TRIGGERS}`,
+        settings.PARTNER_NEEDS && `What helps them feel safe: ${settings.PARTNER_NEEDS}`,
+    ].filter(Boolean)
+
+    if (partnerParts.length > 0) {
+        sections.push(`About ${name}:\n${partnerParts.join('\n')}`)
+    }
+
+    const myParts = [
+        settings.MY_STORY,
+        settings.MY_TRIGGERS && `What tends to activate me: ${settings.MY_TRIGGERS}`,
+        settings.MY_NEEDS && `What helps me feel safe: ${settings.MY_NEEDS}`,
+    ].filter(Boolean)
+
+    if (myParts.length > 0) {
+        sections.push(`About me:\n${myParts.join('\n')}`)
+    }
+
+    return sections.join('\n\n')
+}
 
 const instructions = [
     'Given the conversation above, provide a brief summary of the current situation, emotional dynamics, and main topic.',
@@ -32,7 +62,7 @@ const responseFormat = [
 ].join('\n')
 
 export const systemContext = () =>
-    [settings.CUSTOM_CONTEXT, coreContext].filter(Boolean).join('\n\n')
+    [settings.CUSTOM_CONTEXT, buildProfileContext(), getCoreContext()].filter(Boolean).join('\n\n')
 
 const buildPrompt = (tone: string, context: string): string => {
     const lines = [`${instructions} ${tone}`]
