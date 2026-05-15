@@ -35,6 +35,7 @@
 - **Conversation Summaries**: Analyze and summarize your Apple iMessage conversations with a specified contact from the last 15 minutes to 24 hours
 - **Smart Reply Suggestions**: Get short, medium, and long AI-generated reply options based on recent and historical conversation context
 - **Translate Mode**: Write your raw, unfiltered draft — WellSaid polishes it into short, medium, and long versions in your chosen tone
+- **Psychological Profiles**: Optionally describe the emotional stories and patterns of both you and your partner (core belief, triggers, needs) — the AI uses this context to respond with genuine relational intelligence, not just tone-matching
 - **Tone Selection**: Set the tone for your replies (gentle, funny, reassuring, concise)
 - **Context Addition**: Add additional context to help generate more relevant replies
 - **Dark Mode & Accent Colors**: Floating theme picker with 5 accent colors and dark/light toggle, persisted across sessions
@@ -110,6 +111,7 @@ below), it will automatically use those files and start with HTTPS. Pretty cool.
 2. Copy a suggested reply directly, or write your own draft in the text box and click **translate** to have AI polish it into short, medium, and long versions
 3. Use the tone pills (gentle, funny, reassuring, concise) to shape the style of generated replies
 4. Click the 🎨 button (bottom right) to switch accent colors or toggle dark mode
+5. Optionally fill in **Profiles** in Settings to give the AI emotional context about you and your partner — the more you share, the more attuned the suggestions become
 
 ## How It Works
 
