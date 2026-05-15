@@ -39,6 +39,8 @@ Settings are persisted in `settings.db` (project root). Env vars in `.env` seed 
 
 Key settings keys: `CONTACT_PHONE`, `HISTORY_LOOKBACK_HOURS`, `CUSTOM_CONTEXT`, `OPENAI_API_KEY`, `OPENAI_MODEL`, `ANTHROPIC_API_KEY`, `ANTHROPIC_MODEL`, `GROK_API_KEY`, `GROK_MODEL`, `KHOJ_API_URL`, `KHOJ_AGENT`.
 
+Psychological profile keys (all optional; omitted from prompt when empty): `PARTNER_NAME`, `PARTNER_STORY`, `PARTNER_TRIGGERS`, `PARTNER_NEEDS`, `MY_STORY`, `MY_TRIGGERS`, `MY_NEEDS`. Profile context is assembled in `src/lib/prompts.ts:buildProfileContext()` and injected into `systemContext()`.
+
 ## Required env vars (`.env`)
 
 ```
