@@ -78,6 +78,34 @@ const defaultSettings: Record<string, { value?: string; description: string }> =
     },
     KHOJ_API_URL: { value: env.KHOJ_API_URL, description: 'https://khoj.dev' },
     KHOJ_AGENT: { value: env.KHOJ_AGENT, description: 'optional specific agent to use' },
+    PARTNER_NAME: {
+        value: env.PARTNER_NAME,
+        description: "Your partner's preferred name",
+    },
+    PARTNER_STORY: {
+        value: env.PARTNER_STORY,
+        description: "The core belief or narrative they carry — the story their inner child wrote about their worth and safety in relationships",
+    },
+    PARTNER_TRIGGERS: {
+        value: env.PARTNER_TRIGGERS,
+        description: 'Situations or dynamics that tend to activate their core wound',
+    },
+    PARTNER_NEEDS: {
+        value: env.PARTNER_NEEDS,
+        description: 'What helps them feel safe and seen when they are activated',
+    },
+    MY_STORY: {
+        value: env.MY_STORY,
+        description: 'Your own core belief or narrative — the story your inner child wrote about your worth and safety',
+    },
+    MY_TRIGGERS: {
+        value: env.MY_TRIGGERS,
+        description: 'Situations or dynamics that tend to activate your core wound',
+    },
+    MY_NEEDS: {
+        value: env.MY_NEEDS,
+        description: 'What helps you feel safe and regulated when you are activated',
+    },
 }
 
 for (const [key, { value = '', description }] of Object.entries(defaultSettings)) {

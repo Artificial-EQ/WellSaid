@@ -22,6 +22,7 @@
             defaultProvider: string
             availableProviders: ProviderConfig[]
             settings: Setting[]
+            partnerName: string
         }
         form?: any
     }>()
@@ -65,10 +66,12 @@
         !formState.ui.loading
     )
     const showLoadingIndicators = $derived(formState.ui.loading || formState.ui.translating)
+    const partnerLabel = data.partnerName || 'your partner'
     const summaryContent = $derived(
         formState.ui.loading
-            ? 'Generating summary and replies...'
-            : formState.form.summary || 'click "go" to generate a conversation summary'
+            ? `Generating summary and replies...`
+            : formState.form.summary ||
+              `click "go" to generate a summary of your conversation with ${partnerLabel}`
     )
 
     // Update messages when data changes

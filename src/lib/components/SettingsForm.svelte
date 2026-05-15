@@ -30,8 +30,28 @@
         }
     })
 
+    // Textarea fields with placeholder text
+    const textareaPlaceholders: Record<string, string> = {
+        CUSTOM_CONTEXT: '',
+        PARTNER_STORY:
+            "e.g. 'I learned early that love had to be earned. I tend to believe I'm not enough unless I'm performing or achieving something.'",
+        PARTNER_TRIGGERS:
+            "e.g. 'Feeling criticized or dismissed. Sensing distance or withdrawal without explanation.'",
+        PARTNER_NEEDS:
+            "e.g. 'Reassurance that they're still valued. Patience when they go quiet — not pressure.'",
+        MY_STORY:
+            "e.g. 'I learned to be self-sufficient early on. Asking for help feels like weakness, so I often hold things in until it's too much.'",
+        MY_TRIGGERS:
+            "e.g. 'Feeling unheard or invisible. When things feel chaotic or out of my control.'",
+        MY_NEEDS:
+            "e.g. 'Space to process before talking. Knowing the relationship is stable even when things are hard.'",
+    }
+
     // Group settings by provider
     const settingsGroups = $derived({
+        profiles: settings.filter((s: { key: string; value: string; description: string }) =>
+            s.key.startsWith('PARTNER_') || s.key.startsWith('MY_')
+        ),
         general: settings.filter((s: { key: string; value: string; description: string }) =>
             ['HISTORY_LOOKBACK_HOURS', 'CONTACT_PHONE', 'CUSTOM_CONTEXT'].includes(s.key)
         ),
@@ -62,6 +82,7 @@
 
     const getSectionTitle = (section: string): string => {
         const titles: Record<string, string> = {
+            profiles: 'Profiles',
             general: 'General',
             openai: 'OpenAI',
             anthropic: 'Anthropic',
@@ -69,6 +90,11 @@
             khoj: 'Khoj',
         }
         return titles[section] || section
+    }
+
+    const sectionDescriptions: Record<string, string> = {
+        profiles:
+            'These profiles help the AI understand the emotional context beneath the conversation. Think of each field as capturing the story written in childhood — the beliefs, patterns, and needs that show up in close relationships. Leave any field blank and it will be ignored.',
     }
 
     // Auto-hide success/error messages after 3 seconds
@@ -101,6 +127,9 @@
             {/if}
             <div class="settings-section">
                 <h3 class="section-title">{getSectionTitle(section)}</h3>
+                {#if sectionDescriptions[section]}
+                    <p class="section-description">{sectionDescriptions[section]}</p>
+                {/if}
                 <div class="section-content">
                     {#each sectionSettings as setting}
                         <div class="setting-row">
@@ -108,13 +137,14 @@
                                 {formatLabel(setting.key)}
                                 <span class="description">{setting.description}</span>
                             </label>
-                            {#if setting.key === 'CUSTOM_CONTEXT'}
+                            {#if textareaPlaceholders[setting.key] !== undefined}
                                 <textarea
                                     id={setting.key}
                                     name={setting.key}
                                     bind:value={settingValues[setting.key]}
                                     rows="4"
                                     class="context-textarea"
+                                    placeholder={textareaPlaceholders[setting.key]}
                                 ></textarea>
                             {:else if rangeSettings[setting.key]}
                                 <div class="range-wrapper">
@@ -169,12 +199,19 @@
     }
 
     .section-title {
-        background: var(--primary);
-        color: var(--primary-contrast);
+        color: var(--text);
         margin: 0;
         margin-top: 1rem;
         font-size: 1rem;
         font-weight: 600;
+    }
+
+    .section-description {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        line-height: 1.5;
+        margin: 0.5rem 0 0;
+        padding: 0 0 0.25rem;
     }
 
     .section-content {
@@ -205,7 +242,7 @@
 
     input,
     textarea {
-        border: 1px solid var(--light);
+        border: 1px solid var(--border);
         border-radius: var(--border-radius);
         padding: 0.6rem 0.8rem;
         box-sizing: border-box;
@@ -213,6 +250,7 @@
         font-size: 1rem;
         width: 100%;
         color: var(--text);
+        background-color: var(--card);
         transition:
             border-color 0.2s,
             box-shadow 0.2s;
@@ -221,8 +259,8 @@
     input:focus,
     textarea:focus {
         outline: none;
-        border-color: var(--primary-dark);
-        box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.1);
+        border-color: var(--accent);
+        box-shadow: 0 0 0 2px color-mix(in oklch, var(--accent) 20%, transparent);
     }
 
     textarea {
@@ -288,23 +326,21 @@
 
     .save {
         padding: 0.7rem 1.5rem;
-        background-color: var(--primary-dark);
-        color: var(--white);
-        border: 1px solid var(--primary-light);
-        border-radius: var(--border-radius);
+        background-color: var(--accent);
+        color: var(--accent-text);
+        border: none;
+        border-radius: 999px;
         cursor: pointer;
+        font-family: var(--body-font);
         font-weight: 500;
-        transition:
-            background-color 0.2s,
-            transform 0.1s;
+        transition: opacity 0.15s, transform 0.1s;
         min-height: var(--min-touch-size);
-        min-width: var(--min-touch-size);
         display: flex;
         align-items: center;
     }
 
     .save:hover {
-        background-color: var(--primary-dark);
+        opacity: 0.88;
     }
 
     .save:active {
@@ -312,10 +348,9 @@
     }
 
     .save:disabled {
-        background-color: var(--light);
-        color: var(--gray);
+        background-color: var(--surface);
+        color: var(--text-muted);
         cursor: not-allowed;
-        border-color: var(--light);
     }
 
     .status-message {

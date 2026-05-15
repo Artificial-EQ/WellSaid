@@ -24,9 +24,10 @@ export const load: PageServerLoad = async ({ url }) => {
     return {
         messages,
         multiProvider: hasMultipleProviders(),
-        defaultProvider: DEFAULT_PROVIDER || '', // Handle null case
+        defaultProvider: DEFAULT_PROVIDER || '',
         availableProviders,
         settings,
+        partnerName: settings.find((s) => s.key === 'PARTNER_NAME')?.value || '',
     }
 }
 
