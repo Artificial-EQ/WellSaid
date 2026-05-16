@@ -42,7 +42,7 @@
         "globals": "^16.0.0",
         "jsdom": "^26.1.0",
         "knip": "^5.61.2",
-        "prettier": "^3.5.3",
+        "prettier": "^3.8.3",
         "prettier-plugin-svelte": "^3.4.0",
         "svelte": "^5.0.0",
         "svelte-check": "^4.0.0",
