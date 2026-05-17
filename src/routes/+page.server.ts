@@ -159,7 +159,7 @@ export const actions: Actions = {
                 settings,
             }
         } catch (error) {
-            logger.error('Error saving settings:', error)
+            logger.error({ error }, 'Error saving settings')
             return fail(500, {
                 error: 'Failed to save settings. Please try again.',
             })

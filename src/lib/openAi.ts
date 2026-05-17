@@ -23,28 +23,6 @@ const getConfig = (): OpenAIConfig => ({
     apiKey: settings.OPENAI_API_KEY,
 })
 
-const summaryFunction = {
-    type: 'function',
-    function: {
-        name: 'draft_replies',
-        description: 'Generate a short summary and three suggested replies',
-        parameters: {
-            type: 'object',
-            properties: {
-                summary: {
-                    type: 'string',
-                    description: 'Brief summary of the conversation',
-                },
-                replies: {
-                    type: 'array',
-                    items: { type: 'string' },
-                    description: 'Suggested replies for me',
-                },
-            },
-            required: ['summary', 'replies'],
-        },
-    },
-}
 
 export const getOpenaiReply = async (
     messages: Message[],
