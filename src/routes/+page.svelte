@@ -99,7 +99,10 @@
     }
 
     function applyAllSuggestions() {
-        if (inferState.suggestions) pendingSuggestions = { ...inferState.suggestions }
+        if (inferState.suggestions) {
+            pendingSuggestions = { ...inferState.suggestions }
+            inferState.suggestions = null
+        }
     }
 
     async function runProfileInference() {
