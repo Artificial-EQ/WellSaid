@@ -1,9 +1,9 @@
 import { settings } from '$lib/config'
 import { fetchRelevantHistory } from './history'
 import { logger } from './logger'
-import { openAiPrompt, systemContext, translatePrompt, translateSystemContext } from './prompts'
-import type { Message, ToneType, TranslateResult } from './types'
-import { extractReplies, formatMessagesAsText, parseSummaryToHumanReadable } from './utils'
+import { inferProfilePrompt, inferProfileSystemPrompt, openAiPrompt, systemContext, translatePrompt, translateSystemContext } from './prompts'
+import type { Message, ProfileInferenceResult, ToneType, TranslateResult } from './types'
+import { extractReplies, formatMessagesAsText, parseProfileJson, parseSummaryToHumanReadable } from './utils'
 
 const API_URL = 'https://grok.x.ai/api/chat/completions'
 const DEFAULT_MODEL = 'grok-3'
@@ -83,6 +83,43 @@ export const getGrokReply = async (
             replies: ['(AI API error. Check your key and usage.)'],
         }
     }
+}
+
+export const inferGrokProfile = async (messagesText: string): Promise<ProfileInferenceResult> => {
+    const config = getConfig()
+
+    if (!config.apiKey) {
+        throw new Error('Grok API key is not configured.')
+    }
+
+    const body = {
+        model: config.model,
+        messages: [
+            { role: 'system', content: inferProfileSystemPrompt() },
+            { role: 'user', content: inferProfilePrompt(messagesText) },
+        ],
+        temperature: 0.3,
+        response_format: { type: 'json_object' },
+    }
+
+    logger.info('Sending profile inference request to Grok')
+
+    const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${config.apiKey}`,
+        },
+        body: JSON.stringify(body),
+    })
+
+    if (!response.ok) {
+        throw new Error(`Grok API error code ${response.status}: ${response.statusText}`)
+    }
+
+    const data = await response.json()
+    const rawOutput = data.choices[0]?.message?.content || ''
+    return parseProfileJson(rawOutput)
 }
 
 export const translateGrokDraft = async (

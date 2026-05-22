@@ -1,5 +1,5 @@
 import { timingSafeEqual } from 'node:crypto'
-import type { Message } from './types'
+import type { Message, ProfileInferenceResult } from './types'
 
 export const parseSummaryToHumanReadable = (rawOutput: string): string => {
     const summaryRegex = /Summary:[ \t]*(\n+)?([\s\S]*?)(?=\sReply 1|$)/
@@ -73,4 +73,16 @@ export const isoToAppleNanoseconds = (isoDate: string): number => {
     const targetTime = new Date(isoDate).getTime()
 
     return (targetTime - appleEpoch) * 1000000
+}
+
+export const parseProfileJson = (raw: string): ProfileInferenceResult => {
+    let cleaned = raw.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '')
+    const start = cleaned.indexOf('{')
+    const end = cleaned.lastIndexOf('}')
+    if (start === -1 || end === -1) throw new Error('No JSON object found in model response')
+    const parsed = JSON.parse(cleaned.slice(start, end + 1))
+    const keys = ['PARTNER_STORY', 'PARTNER_TRIGGERS', 'PARTNER_NEEDS', 'MY_STORY', 'MY_TRIGGERS', 'MY_NEEDS'] as const
+    const result: Partial<ProfileInferenceResult> = {}
+    for (const key of keys) result[key] = typeof parsed[key] === 'string' ? parsed[key] : ''
+    return result as ProfileInferenceResult
 }

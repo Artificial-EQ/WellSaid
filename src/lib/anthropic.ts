@@ -1,7 +1,7 @@
 import { settings } from '$lib/config'
-import { anthropicPrompt, translatePrompt, translateSystemContext } from '$lib/prompts'
-import type { Message, ToneType, TranslateResult } from '$lib/types'
-import { extractReplies, formatMessagesAsText, parseSummaryToHumanReadable } from '$lib/utils'
+import { anthropicPrompt, inferProfilePrompt, inferProfileSystemPrompt, translatePrompt, translateSystemContext } from '$lib/prompts'
+import type { Message, ProfileInferenceResult, ToneType, TranslateResult } from '$lib/types'
+import { extractReplies, formatMessagesAsText, parseProfileJson, parseSummaryToHumanReadable } from '$lib/utils'
 import { fetchRelevantHistory } from './history'
 import { logger } from './logger'
 
@@ -77,6 +77,42 @@ export const getAnthropicReply = async (
             replies: ['(AI API error. Check your key and usage.)'],
         }
     }
+}
+
+export const inferAnthropicProfile = async (messagesText: string): Promise<ProfileInferenceResult> => {
+    const config = getConfig()
+
+    if (!config.apiKey) {
+        throw new Error('Anthropic API key is not configured.')
+    }
+
+    const body = {
+        model: config.model,
+        max_tokens: 2048,
+        temperature: 0.3,
+        system: inferProfileSystemPrompt(),
+        messages: [{ role: 'user', content: inferProfilePrompt(messagesText) }],
+    }
+
+    logger.info('Sending profile inference request to Anthropic')
+
+    const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': config.apiKey,
+            'anthropic-version': '2023-06-01',
+        },
+        body: JSON.stringify(body),
+    })
+
+    if (!response.ok) {
+        throw new Error(`Anthropic API error code ${response.status}: ${response.statusText}`)
+    }
+
+    const data = (await response.json()) as { content?: Array<{ text?: string }> }
+    const rawOutput = data.content?.[0]?.text || ''
+    return parseProfileJson(rawOutput)
 }
 
 export const translateAnthropicDraft = async (

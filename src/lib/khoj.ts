@@ -1,7 +1,7 @@
 import { settings } from '$lib/config'
-import { khojPrompt, translateKhojPrompt } from '$lib/prompts'
-import type { Message, ToneType, TranslateResult } from '$lib/types'
-import { extractReplies, parseSummaryToHumanReadable } from '$lib/utils'
+import { inferProfilePrompt, inferProfileSystemPrompt, khojPrompt, translateKhojPrompt } from '$lib/prompts'
+import type { Message, ProfileInferenceResult, ToneType, TranslateResult } from '$lib/types'
+import { extractReplies, parseProfileJson, parseSummaryToHumanReadable } from '$lib/utils'
 import { fetchRelevantHistory } from './history'
 import { logger } from './logger'
 
@@ -54,6 +54,30 @@ export const getKhojReply = async (
             messageCount: messages.length,
         }
     }
+}
+
+export const inferKhojProfile = async (messagesText: string): Promise<ProfileInferenceResult> => {
+    const prompt = [inferProfileSystemPrompt(), inferProfilePrompt(messagesText)].join('\n\n')
+    const body = {
+        q: prompt,
+        ...(settings.KHOJ_AGENT ? { agent: settings.KHOJ_AGENT } : {}),
+    }
+
+    logger.info('Sending profile inference request to Khoj')
+
+    const khojRes = await fetch(khojApiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+    })
+
+    if (!khojRes.ok) {
+        throw new Error(`Khoj API returned ${khojRes.status}`)
+    }
+
+    const data = await khojRes.json()
+    const rawOutput = data.response || ''
+    return parseProfileJson(rawOutput)
 }
 
 export const translateKhojDraft = async (

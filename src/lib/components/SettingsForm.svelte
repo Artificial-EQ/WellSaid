@@ -1,9 +1,10 @@
 <script lang="ts">
     import { enhance } from '$app/forms'
 
-    let { settings, form = null } = $props<{
+    let { settings, form = null, suggestedValues = {} } = $props<{
         settings: { key: string; value: string; description: string }[]
         form?: any
+        suggestedValues?: Record<string, string>
     }>()
 
     // Initialize form values from props
@@ -27,6 +28,13 @@
             settingValues = Object.fromEntries(
                 form.settings.map((s: { key: string; value: string }) => [s.key, s.value])
             )
+        }
+    })
+
+    // Apply incoming suggestions into form fields
+    $effect(() => {
+        for (const [key, val] of Object.entries(suggestedValues)) {
+            if (val !== undefined) settingValues[key] = val
         }
     })
 

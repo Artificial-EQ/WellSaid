@@ -11,7 +11,7 @@
     import ToneSelector from '$lib/components/ToneSelector.svelte'
     import type { Setting } from '$lib/config'
     import type { ProviderConfig } from '$lib/providers/registry'
-    import { type Message, type PageData, TONES, type ToneType } from '$lib/types'
+    import { type Message, type PageData, type ProfileInferenceResult, TONES, type ToneType } from '$lib/types'
 
     const LOCAL_STORAGE_CONTEXT_KEY = 'wellsaid_additional_context'
     const LOCAL_STORAGE_DRAFT_KEY = 'wellsaid_user_draft'
@@ -51,6 +51,13 @@
 
     let activeTab = $state<'main' | 'settings' | 'profiles'>('main')
 
+    let inferState = $state<{ loading: boolean; error: string; suggestions: ProfileInferenceResult | null }>({
+        loading: false,
+        error: '',
+        suggestions: null,
+    })
+    let pendingSuggestions = $state<Record<string, string>>({})
+
     const profileKeys = ['PARTNER_NAME', 'PARTNER_STORY', 'PARTNER_TRIGGERS', 'PARTNER_NEEDS', 'MY_STORY', 'MY_TRIGGERS', 'MY_NEEDS']
     const profileSettings = $derived(data.settings.filter((s: Setting) => profileKeys.includes(s.key)))
     const generalSettings = $derived(data.settings.filter((s: Setting) => !profileKeys.includes(s.key)))
@@ -70,6 +77,69 @@
         !formState.ui.loading
     )
     const showLoadingIndicators = $derived(formState.ui.loading || formState.ui.translating)
+    const canInferProfile = $derived(hasMessages && !inferState.loading)
+
+    const PROFILE_FIELD_LABELS: Record<string, string> = {
+        PARTNER_STORY: 'Their story',
+        PARTNER_TRIGGERS: 'Their triggers',
+        PARTNER_NEEDS: 'Their needs',
+        MY_STORY: 'My story',
+        MY_TRIGGERS: 'My triggers',
+        MY_NEEDS: 'My needs',
+    }
+
+    function applySuggestion(key: string) {
+        if (!inferState.suggestions) return
+        pendingSuggestions = { ...pendingSuggestions, [key]: inferState.suggestions[key as keyof ProfileInferenceResult] }
+    }
+
+    function applyAllSuggestions() {
+        if (inferState.suggestions) pendingSuggestions = { ...inferState.suggestions }
+    }
+
+    async function runProfileInference() {
+        inferState.loading = true
+        inferState.error = ''
+        inferState.suggestions = null
+
+        try {
+            const formData = new FormData()
+            formData.append('messages', JSON.stringify(formState.form.messages))
+            formData.append('provider', formState.ai.provider)
+
+            const response = await fetch('?/inferProfile', {
+                method: 'POST',
+                headers: { Accept: 'application/json' },
+                body: formData,
+            })
+
+            const result = await response.json()
+
+            if (!response.ok) {
+                throw new Error(result?.error || 'Profile inference failed')
+            }
+
+            if (result && typeof result.data === 'string') {
+                const parsedData = JSON.parse(result.data)
+                // devalue encoding: parsedData[0] = { inferredProfile: N }
+                // parsedData[N] = { PARTNER_STORY: X, ... }
+                // parsedData[X] = the string value
+                const profileIndex = parsedData[0]?.inferredProfile
+                const profileKeys = parsedData[profileIndex]
+                const suggestions: Record<string, string> = {}
+                for (const [key, idx] of Object.entries(profileKeys as Record<string, number>)) {
+                    suggestions[key] = parsedData[idx]
+                }
+                inferState.suggestions = suggestions as ProfileInferenceResult
+            } else {
+                throw new Error('Unexpected response format from server')
+            }
+        } catch (err) {
+            inferState.error = err instanceof Error ? err.message : 'Unknown error during profile inference'
+        } finally {
+            inferState.loading = false
+        }
+    }
     const partnerLabel = data.partnerName || 'your partner'
     const summaryContent = $derived(
         formState.ui.loading
@@ -398,7 +468,49 @@
                 {/if}
             {:else if activeTab === 'profiles'}
                 <section class="settings-section">
-                    <SettingsForm settings={profileSettings} {form} />
+                    <div class="infer-bar">
+                        <button
+                            type="button"
+                            class="infer-button"
+                            onclick={runProfileInference}
+                            disabled={!canInferProfile}
+                        >
+                            {inferState.loading ? 'Analysing…' : 'Suggest from messages'}
+                        </button>
+                        {#if !hasMessages}
+                            <span class="infer-hint">Load a conversation on the main tab first</span>
+                        {/if}
+                        {#if inferState.error}
+                            <span class="infer-error">{inferState.error}</span>
+                        {/if}
+                    </div>
+
+                    {#if inferState.suggestions}
+                        <div class="suggestions-panel">
+                            <p class="suggestions-note">Review suggestions below. Apply what resonates, then save with the Update button.</p>
+                            {#each Object.keys(PROFILE_FIELD_LABELS) as field}
+                                {#if inferState.suggestions[field as keyof ProfileInferenceResult]}
+                                    <div class="suggestion-row">
+                                        <div class="suggestion-header">
+                                            <span class="suggestion-label">{PROFILE_FIELD_LABELS[field]}</span>
+                                            <button
+                                                type="button"
+                                                class="use-button"
+                                                onclick={() => applySuggestion(field)}
+                                            >use this</button>
+                                        </div>
+                                        <p class="suggestion-text">{inferState.suggestions[field as keyof ProfileInferenceResult]}</p>
+                                    </div>
+                                {/if}
+                            {/each}
+                            <div class="suggestions-actions">
+                                <button type="button" class="apply-all-button" onclick={applyAllSuggestions}>Apply all</button>
+                                <button type="button" class="dismiss-button" onclick={() => { inferState.suggestions = null }}>Dismiss</button>
+                            </div>
+                        </div>
+                    {/if}
+
+                    <SettingsForm settings={profileSettings} {form} suggestedValues={pendingSuggestions} />
                 </section>
             {:else}
                 <section class="settings-section">
@@ -660,5 +772,152 @@
 
     .settings-link-button:hover {
         opacity: 0.88;
+    }
+
+    /* ===== Profile Inference ===== */
+    .infer-bar {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .infer-button {
+        padding: 0.55rem 1.2rem;
+        background-color: var(--accent-soft);
+        color: var(--accent-text);
+        border: 1px solid var(--accent);
+        border-radius: 999px;
+        cursor: pointer;
+        font-family: var(--body-font);
+        font-size: 0.9rem;
+        font-weight: 500;
+        transition: opacity 0.15s, transform 0.1s;
+        min-height: var(--min-touch-size);
+    }
+
+    .infer-button:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+    }
+
+    .infer-button:not(:disabled):hover {
+        opacity: 0.82;
+    }
+
+    .infer-hint {
+        font-size: 0.82rem;
+        color: var(--text-muted);
+    }
+
+    .infer-error {
+        font-size: 0.82rem;
+        color: var(--error, #e04040);
+    }
+
+    .suggestions-panel {
+        background-color: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--border-radius);
+        padding: 1rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .suggestions-note {
+        font-size: 0.82rem;
+        color: var(--text-muted);
+        margin: 0 0 1rem;
+        line-height: 1.5;
+    }
+
+    .suggestion-row {
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .suggestion-row:last-of-type {
+        border-bottom: none;
+        margin-bottom: 0.25rem;
+    }
+
+    .suggestion-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 0.35rem;
+    }
+
+    .suggestion-label {
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--text-muted);
+    }
+
+    .use-button {
+        font-size: 0.78rem;
+        font-weight: 500;
+        color: var(--accent);
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0;
+        font-family: var(--body-font);
+        opacity: 0.85;
+        transition: opacity 0.1s;
+    }
+
+    .use-button:hover {
+        opacity: 1;
+        text-decoration: underline;
+    }
+
+    .suggestion-text {
+        font-size: 0.9rem;
+        line-height: 1.55;
+        color: var(--text);
+        margin: 0;
+    }
+
+    .suggestions-actions {
+        display: flex;
+        gap: 0.75rem;
+        margin-top: 0.75rem;
+    }
+
+    .apply-all-button {
+        padding: 0.45rem 1rem;
+        background-color: var(--accent);
+        color: var(--accent-text);
+        border: none;
+        border-radius: 999px;
+        cursor: pointer;
+        font-family: var(--body-font);
+        font-size: 0.85rem;
+        font-weight: 500;
+        transition: opacity 0.15s;
+    }
+
+    .apply-all-button:hover {
+        opacity: 0.88;
+    }
+
+    .dismiss-button {
+        padding: 0.45rem 1rem;
+        background: none;
+        color: var(--text-muted);
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        cursor: pointer;
+        font-family: var(--body-font);
+        font-size: 0.85rem;
+        transition: opacity 0.15s;
+    }
+
+    .dismiss-button:hover {
+        opacity: 0.7;
     }
 </style>

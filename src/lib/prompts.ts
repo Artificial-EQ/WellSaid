@@ -133,3 +133,40 @@ export const translateKhojPrompt = (
         'Here are some text messages between my partner and I:\n' + formatMessagesAsText(messages),
         translatePrompt(userDraft, tone, context),
     ].join('\n')
+
+export const inferProfileSystemPrompt = (): string =>
+    [
+        "You are a compassionate observer drawing on Gabor Maté's Compassionate Inquiry.",
+        "Read a conversation transcript and infer psychological profiles for two people: the one writing as 'me' and their partner.",
+        'Observe with curiosity, not judgment. Look for patterns, not pathology.',
+        'Attend to:',
+        '  - Attachment patterns: how each person bids for connection, responds to distance, seeks reassurance',
+        '  - Emotional reactivity: escalation, withdrawal, defensiveness, flooding',
+        "  - Core beliefs surfacing in language: 'always', 'never', 'you don't care', self-minimizing phrases",
+        '  - The childhood wound speaking beneath adult behaviour: what fear seems to be driving this?',
+        '  - Repair attempts: who reaches for reconnection, and how?',
+        '  - What reliably creates warmth or safety between them',
+        'Write in compassionate, plain language. Ground every inference in specific observed behaviour.',
+        'Never diagnose. Name patterns, not defects.',
+    ].join('\n')
+
+export const inferProfilePrompt = (messagesText: string): string =>
+    [
+        "Here is a conversation transcript. Messages from the user are prefixed 'me:' and messages from their partner use 'them:'.",
+        '',
+        '"""',
+        messagesText,
+        '"""',
+        '',
+        'Based on this conversation, infer psychological profiles for both people.',
+        'Return ONLY a valid JSON object with exactly these six keys. No explanation, preamble, or markdown — raw JSON only.',
+        '',
+        '  "PARTNER_STORY": Their core narrative about worth and safety in relationships, grounded in what you observed.',
+        '  "PARTNER_TRIGGERS": Topics, tones, or dynamics that activate tension or withdrawal in them.',
+        '  "PARTNER_NEEDS": What appears to help them feel safe, seen, or reconnected.',
+        '  "MY_STORY": The same for the person writing as "me".',
+        '  "MY_TRIGGERS": The same for "me".',
+        '  "MY_NEEDS": The same for "me".',
+        '',
+        'If there is insufficient evidence for a field, use an empty string "". Do not invent. Observe, reflect, name gently.',
+    ].join('\n')

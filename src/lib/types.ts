@@ -39,3 +39,12 @@ export interface OpenAIConfig {
     apiUrl: string
     apiKey?: string
 }
+
+export interface ProfileInferenceResult {
+    PARTNER_STORY: string
+    PARTNER_TRIGGERS: string
+    PARTNER_NEEDS: string
+    MY_STORY: string
+    MY_TRIGGERS: string
+    MY_NEEDS: string
+}

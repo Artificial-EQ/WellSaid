@@ -1,13 +1,14 @@
-import { getAnthropicReply, translateAnthropicDraft } from '$lib/anthropic'
+import { getAnthropicReply, inferAnthropicProfile, translateAnthropicDraft } from '$lib/anthropic'
 import { getAllSettings, updateSetting } from '$lib/config'
-import { getGrokReply, translateGrokDraft } from '$lib/grok'
+import { getGrokReply, inferGrokProfile, translateGrokDraft } from '$lib/grok'
 import { queryMessagesDb } from '$lib/iMessages'
-import { getKhojReply, translateKhojDraft } from '$lib/khoj'
+import { getKhojReply, inferKhojProfile, translateKhojDraft } from '$lib/khoj'
 import { logger } from '$lib/logger'
-import { getOpenaiReply, translateOpenaiDraft } from '$lib/openAi'
+import { getOpenaiReply, inferOpenaiProfile, translateOpenaiDraft } from '$lib/openAi'
 import { DEFAULT_PROVIDER } from '$lib/provider'
 import { getAvailableProviders, hasMultipleProviders } from '$lib/providers/registry'
 import { TONES, type Message, type ToneType } from '$lib/types'
+import { formatMessagesAsText } from '$lib/utils'
 import { fail } from '@sveltejs/kit'
 import type { Actions, PageServerLoad } from './$types'
 
@@ -162,6 +163,50 @@ export const actions: Actions = {
             logger.error({ error }, 'Error saving settings')
             return fail(500, {
                 error: 'Failed to save settings. Please try again.',
+            })
+        }
+    },
+    inferProfile: async ({ request }) => {
+        try {
+            const formData = await request.formData()
+            const messagesString = formData.get('messages') as string
+            const provider = formData.get('provider') as string
+
+            if (!messagesString) {
+                return fail(400, { error: 'No messages provided for profile inference.' })
+            }
+
+            let messages: Message[]
+            try {
+                messages = JSON.parse(messagesString) as Message[]
+            } catch (err) {
+                logger.error({ err }, 'Failed to parse messages for profile inference')
+                return fail(400, { error: 'Invalid messages format.' })
+            }
+
+            if (!Array.isArray(messages) || messages.length === 0) {
+                return fail(400, { error: 'No messages loaded.' })
+            }
+
+            const messagesText = formatMessagesAsText(messages)
+
+            const inferFn =
+                provider === 'khoj'
+                    ? inferKhojProfile
+                    : provider === 'anthropic'
+                      ? inferAnthropicProfile
+                      : provider === 'grok'
+                        ? inferGrokProfile
+                        : inferOpenaiProfile
+
+            const inferredProfile = await inferFn(messagesText)
+            logger.info('Profile inference completed')
+            return { inferredProfile }
+        } catch (err) {
+            logger.error({ err }, 'Error inferring profile')
+            return fail(500, {
+                error: 'Failed to infer profile',
+                details: err instanceof Error ? err.message : String(err),
             })
         }
     },
