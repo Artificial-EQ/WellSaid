@@ -63,7 +63,7 @@ select {
     font-family: var(--label-font);
     font-size: 0.9rem;
     padding: 0.45rem 0.6rem;
-    border-radius: 8px;
+    border-radius: var(--border-radius);
     border: 1px solid var(--border);
     background-color: var(--card);
     color: var(--text);
@@ -107,13 +107,3 @@ input, textarea {
     }
 }
 
-@keyframes fadeUp {
-    from {
-        opacity: 0;
-        transform: translateY(8px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}

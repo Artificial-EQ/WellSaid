@@ -11,12 +11,7 @@
         loading: false,
     })
 
-    $effect(() => {
-        const errorParam = page.url.searchParams.get('error')
-        if (errorParam === 'too_many_attempts') {
-            // handled below
-        }
-    })
+
 </script>
 
 <svelte:head>

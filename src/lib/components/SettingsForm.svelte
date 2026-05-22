@@ -331,6 +331,12 @@ PARTNER_STORY:
         transform: scale(0.98);
     }
 
+    .save:disabled {
+        background-color: var(--surface);
+        color: var(--text-muted);
+        cursor: not-allowed;
+    }
+
     .status-message {
         font-family: var(--label-font);
         font-size: 0.82rem;
