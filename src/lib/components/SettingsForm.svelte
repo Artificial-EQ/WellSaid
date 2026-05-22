@@ -191,122 +191,105 @@ PARTNER_STORY:
 
 <style>
     .settings-section {
-        background: var(--bg-secondary);
-        border-radius: var(--border-radius);
-        margin-bottom: 1.5rem;
-        overflow: hidden;
-    }
-
-    .section-title {
-        color: var(--text);
-        margin: 0;
-        margin-top: 1rem;
-        font-size: 1rem;
-        font-weight: 600;
-    }
-
-    .section-description {
-        font-size: 0.85rem;
-        color: var(--text-muted);
-        line-height: 1.5;
-        margin: 0.5rem 0 0;
-        padding: 0 0 0.25rem;
-    }
-
-    .section-content {
-        padding: 1rem;
-    }
-
-    .setting-row {
-        margin-bottom: 1.25rem;
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-
-    .setting-label {
-        font-weight: 600;
-        display: block;
         margin-bottom: 0.25rem;
     }
 
-    .description {
-        font-family: 'Inter', sans-serif;
+    .section-title {
+        font-family: var(--label-font);
+        font-size: 0.72rem;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        margin: 1.25rem 0 0.5rem;
+    }
+
+    .section-description {
+        font-family: var(--body-font);
+        font-size: 0.85rem;
+        font-style: italic;
+        color: var(--text-muted);
+        line-height: 1.6;
+        margin: 0 0 0.75rem;
+    }
+
+    .section-content {
+        padding: 0;
+    }
+
+    .setting-row {
+        margin-bottom: 1.1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+    }
+
+    .setting-label {
+        font-family: var(--label-font);
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: var(--text);
         display: block;
-        font-size: 0.8rem;
-        color: var(--gray);
-        font-weight: normal;
+    }
+
+    .description {
+        font-family: var(--label-font);
+        display: block;
+        font-size: 0.78rem;
+        color: var(--text-muted);
+        font-weight: 400;
         line-height: 1.4;
     }
 
     input,
     textarea {
+        font-family: var(--body-font);
+        font-size: 0.95rem;
         border: 1px solid var(--border);
         border-radius: var(--border-radius);
-        padding: 0.6rem 0.8rem;
+        padding: 0.6rem 0.75rem;
         box-sizing: border-box;
-        font-family: inherit;
-        font-size: 1rem;
         width: 100%;
         color: var(--text);
-        background-color: var(--card);
-        transition:
-            border-color 0.2s,
-            box-shadow 0.2s;
+        background-color: var(--surface);
+        transition: border-color 0.15s, box-shadow 0.15s;
     }
 
     input:focus,
     textarea:focus {
         outline: none;
         border-color: var(--accent);
-        box-shadow: 0 0 0 2px color-mix(in oklch, var(--accent) 20%, transparent);
+        box-shadow: 0 0 0 2px color-mix(in oklch, var(--accent) 15%, transparent);
     }
 
     textarea {
-        min-height: 120px;
+        min-height: 110px;
         resize: vertical;
-        line-height: 1.5;
+        line-height: 1.6;
     }
 
-    /* Specific field widths */
     input[name='CONTACT_PHONE'] {
         width: 200px;
-    }
-
-    input[type='text'][name='HISTORY_LOOKBACK_HOURS'],
-    input[type='text'][id$='_TEMPERATURE'],
-    input[type='text'][id$='_TOP_P'],
-    input[type='text'][id$='_PENALTY'] {
-        width: 70px;
-        text-align: center;
-        padding: 0.6rem 0.5rem;
     }
 
     .range-wrapper {
         display: flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: 0.75rem;
     }
 
     .range-input {
         width: 200px;
-        padding: 8px 0;
+        padding: 6px 0;
         margin: 0;
-    }
-
-    @media (max-width: 768px) {
-        input[type='range'] {
-            accent-color: var(--primary-dark);
-        }
+        accent-color: var(--accent);
     }
 
     .range-value {
-        display: inline-block;
-        min-width: 30px;
-        text-align: center;
-        font-family: monospace;
-        font-size: 1.3em;
-        margin-left: 10px;
+        font-family: var(--label-font);
+        font-size: 0.9rem;
+        font-weight: 500;
+        min-width: 2.5rem;
         color: var(--text);
     }
 
@@ -324,14 +307,16 @@ PARTNER_STORY:
     }
 
     .save {
-        padding: 0.7rem 1.5rem;
+        padding: 0.6rem 1.4rem;
         background-color: var(--accent);
         color: var(--accent-text);
         border: none;
         border-radius: 999px;
         cursor: pointer;
-        font-family: var(--body-font);
-        font-weight: 500;
+        font-family: var(--label-font);
+        font-size: 0.82rem;
+        font-weight: 600;
+        letter-spacing: 0.04em;
         transition: opacity 0.15s, transform 0.1s;
         min-height: var(--min-touch-size);
         display: flex;
@@ -346,15 +331,11 @@ PARTNER_STORY:
         transform: scale(0.98);
     }
 
-    .save:disabled {
-        background-color: var(--surface);
-        color: var(--text-muted);
-        cursor: not-allowed;
-    }
-
     .status-message {
-        font-size: 0.9rem;
-        font-weight: 600;
+        font-family: var(--label-font);
+        font-size: 0.82rem;
+        font-weight: 500;
+        color: var(--success);
     }
 
     .status-message.error {
