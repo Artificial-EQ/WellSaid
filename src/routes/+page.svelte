@@ -792,15 +792,15 @@
 
     .infer-button {
         padding: 0.55rem 1.2rem;
-        background-color: var(--accent-soft);
-        color: var(--accent-text);
-        border: 1px solid var(--accent);
+        background-color: transparent;
+        color: var(--accent);
+        border: 1.5px solid var(--accent);
         border-radius: 999px;
         cursor: pointer;
         font-family: var(--body-font);
         font-size: 0.9rem;
         font-weight: 500;
-        transition: opacity 0.15s, transform 0.1s;
+        transition: opacity 0.15s, background-color 0.15s;
         min-height: var(--min-touch-size);
     }
 
