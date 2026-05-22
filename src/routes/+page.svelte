@@ -96,6 +96,8 @@
     function applySuggestion(key: string) {
         if (!inferState.suggestions) return
         pendingSuggestions = { ...pendingSuggestions, [key]: inferState.suggestions[key as keyof ProfileInferenceResult] }
+        inferState.suggestions = { ...inferState.suggestions, [key]: '' }
+        if (Object.values(inferState.suggestions).every(v => !v)) inferState.suggestions = null
     }
 
     function applyAllSuggestions() {
