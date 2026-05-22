@@ -51,38 +51,35 @@
         <div class="reply-card" role="tabpanel">
             <div class="reply-content">{replies[activeTab]}</div>
             <div class="card-footer">
-                <button class="copy-button" onclick={copyActive} aria-label="Copy to clipboard">
-                    {#if copied}
-                        ✓ Copied
-                    {:else}
-                        📋 Copy
-                    {/if}
+                <button class="copy-button" class:copied onclick={copyActive} aria-label="Copy to clipboard">
+                    {copied ? 'Copied' : 'Copy'}
                 </button>
             </div>
         </div>
     {:else}
         <div class="empty-state">
-            <strong>¯\_(ツ)_/¯</strong>
+            Generate a summary to see reply suggestions.
         </div>
     {/if}
 </div>
 
 <style>
     .suggestions {
-        margin-top: 1rem;
+        margin-top: 0.75rem;
     }
 
     .tab-bar {
         display: flex;
-        gap: 0;
-        border-bottom: 2px solid var(--border);
+        border-bottom: 1px solid var(--border);
         margin-bottom: 0;
     }
 
     .tab {
-        font-family: var(--body-font);
-        font-size: 0.875rem;
-        font-weight: 500;
+        font-family: var(--label-font);
+        font-size: 0.78rem;
+        font-weight: 400;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
         padding: 0.5rem 1rem;
         border: none;
         background: none;
@@ -95,21 +92,22 @@
     .tab::after {
         content: '';
         position: absolute;
-        bottom: -2px;
-        left: 0;
-        right: 0;
+        bottom: -1px;
+        left: 0.4rem;
+        right: 0.4rem;
         height: 2px;
         background: var(--accent);
-        opacity: 0;
-        transition: opacity 0.15s;
+        transform: scaleX(0);
+        transition: transform 0.2s ease;
     }
 
     .tab.active {
-        color: var(--accent);
+        color: var(--text);
+        font-weight: 500;
     }
 
     .tab.active::after {
-        opacity: 1;
+        transform: scaleX(1);
     }
 
     .tab:hover:not(.active) {
@@ -117,16 +115,17 @@
     }
 
     .reply-card {
-        background: var(--card);
+        background: var(--surface);
         border: 1px solid var(--border);
         border-top: none;
         border-radius: 0 0 var(--border-radius) var(--border-radius);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
     }
 
     .reply-content {
+        font-family: var(--body-font);
+        font-size: 0.975rem;
         padding: 1rem;
-        line-height: 1.6;
+        line-height: 1.7;
         color: var(--text);
         min-height: 4rem;
     }
@@ -139,25 +138,31 @@
     }
 
     .copy-button {
-        font-family: var(--body-font);
-        font-size: 0.85rem;
-        padding: 0.35rem 0.75rem;
+        font-family: var(--label-font);
+        font-size: 0.78rem;
+        font-weight: 500;
+        letter-spacing: 0.04em;
+        padding: 0.35rem 0.9rem;
         border-radius: var(--border-radius);
-        border: 1px solid var(--border);
-        background: var(--surface);
-        color: var(--text);
+        border: 1.5px solid var(--accent);
+        background: none;
+        color: var(--accent);
         cursor: pointer;
-        transition: background 0.15s;
-        min-height: var(--min-touch-size);
+        transition: background 0.15s, color 0.15s;
+        min-height: 32px;
     }
 
-    .copy-button:hover {
-        background: var(--accent-soft);
-        color: var(--accent);
+    .copy-button:hover,
+    .copy-button.copied {
+        background: var(--accent);
+        color: var(--accent-text);
     }
 
     .empty-state {
+        font-family: var(--body-font);
+        font-size: 0.9rem;
         color: var(--text-muted);
+        font-style: italic;
         text-align: center;
         padding: 2rem;
     }
@@ -165,13 +170,11 @@
     /* Skeleton loading */
     .skeleton-tabs {
         display: flex;
-        gap: 0;
-        border-bottom: 2px solid var(--border);
+        border-bottom: 1px solid var(--border);
     }
 
     .skeleton-tab {
-        font-size: 0.875rem;
-        font-weight: 500;
+        font-size: 0.78rem;
         padding: 0.5rem 1rem;
         color: transparent;
         background: var(--surface);
@@ -181,7 +184,7 @@
     }
 
     .skeleton-card {
-        background: var(--card);
+        background: var(--surface);
         border: 1px solid var(--border);
         border-top: none;
         border-radius: 0 0 var(--border-radius) var(--border-radius);
@@ -189,24 +192,19 @@
     }
 
     .skeleton-line {
-        height: 14px;
-        background: var(--surface);
+        height: 13px;
+        background: var(--border);
         border-radius: 4px;
         margin-bottom: 0.75rem;
         animation: skeleton-pulse 1.5s ease-in-out infinite;
     }
 
     .skeleton-line.short {
-        width: 60%;
+        width: 55%;
     }
 
     @keyframes skeleton-pulse {
-        0%,
-        100% {
-            opacity: 0.5;
-        }
-        50% {
-            opacity: 1;
-        }
+        0%, 100% { opacity: 0.5; }
+        50% { opacity: 1; }
     }
 </style>

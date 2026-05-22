@@ -29,50 +29,82 @@
     details.context-details {
         text-align: left;
         border: 1px solid var(--border);
-        background-color: var(--card);
+        background-color: transparent;
         border-radius: var(--border-radius);
-        padding: 1rem;
-        margin-bottom: 1rem;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        padding: 0.75rem 1rem;
+        margin-bottom: 1.25rem;
     }
 
     details summary {
         cursor: pointer;
+        font-family: var(--label-font);
+        font-size: 0.78rem;
         font-weight: 500;
-        color: var(--text);
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        list-style: none;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+    details summary::before {
+        content: '+';
+        font-size: 1rem;
+        line-height: 1;
+        color: var(--accent);
+        transition: transform 0.2s;
+    }
+
+    details[open] summary::before {
+        content: '−';
+    }
+
+    details summary::-webkit-details-marker {
+        display: none;
     }
 
     textarea.context-input {
         font-family: var(--body-font);
-        font-size: 1rem;
+        font-size: 0.95rem;
         width: 100%;
         margin-top: 0.75rem;
-        padding: 0.75rem;
+        padding: 0.65rem 0.75rem;
         border: 1px solid var(--border);
         border-radius: var(--border-radius);
         resize: vertical;
         min-height: 80px;
         color: var(--text);
-        background-color: var(--card);
+        background-color: var(--surface);
         text-size-adjust: 100%;
         -webkit-text-size-adjust: 100%;
         touch-action: manipulation;
+        box-sizing: border-box;
+        transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    textarea.context-input:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: 0 0 0 2px color-mix(in oklch, var(--accent) 15%, transparent);
     }
 
     .clear-button {
         border: 1px solid var(--border);
-        background-color: var(--surface);
+        background: none;
         color: var(--text-muted);
         border-radius: var(--border-radius);
-        padding: 0.25rem 0.75rem;
+        padding: 0.3rem 0.75rem;
         cursor: pointer;
-        font-family: var(--body-font);
-        transition: background-color 0.15s;
+        font-family: var(--label-font);
+        font-size: 0.78rem;
+        transition: color 0.15s, border-color 0.15s;
     }
 
     .clear-button:hover {
-        background-color: var(--border);
         color: var(--text);
+        border-color: var(--text-muted);
     }
 
     .button-container {

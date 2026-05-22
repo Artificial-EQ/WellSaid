@@ -152,10 +152,8 @@
     }
     const partnerLabel = data.partnerName || 'your partner'
     const summaryContent = $derived(
-        formState.ui.loading
-            ? `Generating summary and replies...`
-            : formState.form.summary ||
-              `click "go" to generate a summary of your conversation with ${partnerLabel}`
+        formState.form.summary ||
+        `click "go" to generate a summary of your conversation with ${partnerLabel}`
     )
 
     // Update messages when data changes
@@ -357,18 +355,18 @@
 <main class="app">
     <header>
         <h1>WellSaid</h1>
-        <i>Empathy. Upgraded.</i>
+        <p class="tagline">Empathy, upgraded.</p>
     </header>
 
     <nav class="tab-bar">
-        <button class:active={activeTab === 'main'} onclick={() => (activeTab = 'main')} aria-label="Home">
-            💬
+        <button class:active={activeTab === 'main'} onclick={() => (activeTab = 'main')}>
+            conversation
         </button>
-        <button class:active={activeTab === 'profiles'} onclick={() => (activeTab = 'profiles')} aria-label="Profiles">
-            🫂
+        <button class:active={activeTab === 'profiles'} onclick={() => (activeTab = 'profiles')}>
+            profiles
         </button>
-        <button class:active={activeTab === 'settings'} onclick={() => (activeTab = 'settings')} aria-label="Settings">
-            ⚙️
+        <button class:active={activeTab === 'settings'} onclick={() => (activeTab = 'settings')}>
+            settings
         </button>
     </nav>
 
@@ -392,14 +390,16 @@
                         />
 
                         <!-- Conversation summary -->
-                        <section class="conversation">
-                            <div class="summary">
-                                {#if formState.ui.loading}
-                                    <div class="loading-indicator">{summaryContent}</div>
-                                {:else}
-                                    {summaryContent}
-                                {/if}
-                            </div>
+                        <section class="conversation" class:has-content={hasSummary && !formState.ui.loading}>
+                            {#if formState.ui.loading}
+                                <div class="loading-indicator">
+                                    <span class="loading-dot"></span>
+                                    <span class="loading-dot"></span>
+                                    <span class="loading-dot"></span>
+                                </div>
+                            {:else}
+                                <div class="summary">{summaryContent}</div>
+                            {/if}
                         </section>
 
                         <!-- Raw messages (collapsible) -->
@@ -536,16 +536,90 @@
 <ThemePicker bind:this={themePicker} />
 
 <style>
-    /* ===== Layout & Structure ===== */
     main.app {
-        padding-bottom: 1rem;
+        width: 100%;
+        padding-bottom: 2rem;
     }
 
+    /* ===== Header ===== */
+    header {
+        text-align: center;
+        padding-top: 0.5rem;
+        margin-bottom: 0.25rem;
+    }
+
+    header h1 {
+        font-family: var(--heading-font);
+        font-size: 3rem;
+        font-weight: 600;
+        color: var(--text);
+        margin: 0;
+        letter-spacing: -0.01em;
+        line-height: 1;
+    }
+
+    .tagline {
+        font-family: var(--body-font);
+        font-style: italic;
+        font-size: 0.9rem;
+        color: var(--text-muted);
+        margin: 0.3rem 0 1rem;
+    }
+
+    /* ===== Tab Strip ===== */
+    .tab-bar {
+        display: flex;
+        width: 100%;
+        max-width: 600px;
+        margin: 0 auto 0;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .tab-bar button {
+        font-family: var(--label-font);
+        font-size: 0.78rem;
+        font-weight: 400;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        background: none;
+        border: none;
+        padding: 0.6rem 1.1rem;
+        cursor: pointer;
+        color: var(--text-muted);
+        position: relative;
+        transition: color 0.2s;
+    }
+
+    .tab-bar button::after {
+        content: '';
+        position: absolute;
+        bottom: -1px;
+        left: 0.5rem;
+        right: 0.5rem;
+        height: 2px;
+        background: var(--accent);
+        transform: scaleX(0);
+        transition: transform 0.2s ease;
+    }
+
+    .tab-bar button.active {
+        color: var(--text);
+        font-weight: 500;
+    }
+
+    .tab-bar button.active::after {
+        transform: scaleX(1);
+    }
+
+    .tab-bar button:hover:not(.active) {
+        color: var(--text);
+    }
+
+    /* ===== Content Card ===== */
     .content-container {
         display: flex;
         flex-direction: column;
         align-items: center;
-        padding: 0;
     }
 
     .tab-content {
@@ -553,76 +627,16 @@
         flex-direction: column;
         width: 100%;
         max-width: 600px;
-        padding: 1rem;
-        border: 1px solid var(--border);
-        border-radius: var(--border-radius) 0 var(--border-radius) var(--border-radius);
+        padding: 1.5rem 1.25rem;
         background-color: var(--card);
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
-        margin: 0;
-        min-height: calc(100vh - 200px);
-        overflow-y: auto;
-    }
-
-    /* ===== Header ===== */
-    header {
-        text-align: center;
-    }
-
-    header h1 {
-        font-family: var(--heading-font);
-        font-size: 2.6rem;
-        color: var(--accent);
-        text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.08);
-        margin-top: 1rem;
-        margin-bottom: 0;
-    }
-
-    header i {
-        font-style: italic;
-        font-size: 0.95rem;
-        color: var(--text-muted);
-        display: block;
-        margin-bottom: 1.25rem;
-    }
-
-    /* ===== Tab Bar ===== */
-    .tab-bar {
-        display: flex;
-        gap: 0;
-        padding: 0;
-        background-color: transparent;
-        margin-bottom: -1px;
-        position: relative;
-        z-index: 1;
-        justify-content: flex-end;
-        width: 100%;
-        max-width: 600px;
-        margin-left: auto;
-        margin-right: auto;
-    }
-
-    .tab-bar button {
-        font-size: 0.9rem;
-        background-color: var(--surface);
-        color: var(--text-muted);
-        padding: 0.5rem 1rem;
-        border-radius: var(--border-radius) var(--border-radius) 0 0;
         border: 1px solid var(--border);
-        border-bottom: none;
-        cursor: pointer;
-        margin-left: 2px;
-        transition: background-color 0.15s, color 0.15s;
+        border-top: none;
+        border-radius: 0 0 var(--border-radius) var(--border-radius);
+        box-shadow: var(--shadow-md);
+        min-height: calc(100vh - 220px);
     }
 
-    .tab-bar button.active {
-        background-color: var(--card);
-        color: var(--accent);
-        border-color: var(--border);
-        border-bottom: none;
-        font-weight: 600;
-    }
-
-    /* ===== Form Consistency ===== */
+    /* ===== Form ===== */
     form {
         display: flex;
         flex-direction: column;
@@ -633,33 +647,49 @@
         background-color: transparent;
     }
 
-    /* ===== Conversation Section ===== */
+    /* ===== Conversation Summary ===== */
     .conversation {
-        background-color: var(--accent-soft);
-        min-height: 20px;
-        transition: opacity 0.3s, background-color 0.2s;
-        border-radius: var(--border-radius);
-        padding: 1rem;
-        margin-bottom: 1rem;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+        margin-bottom: 1.25rem;
+        padding: 0;
+        min-height: 2.5rem;
+    }
+
+    .conversation.has-content {
+        border-left: 3px solid var(--accent);
+        padding: 0.25rem 0 0.25rem 1rem;
     }
 
     .summary {
-        font-family: var(--summary-font);
-        font-size: 1rem;
-        line-height: 1.6;
-        letter-spacing: 0.02em;
-        overflow-wrap: break-word; /* Prevent long words from overflowing */
+        font-family: var(--body-font);
+        font-size: 0.975rem;
+        line-height: 1.75;
+        color: var(--text);
+        overflow-wrap: break-word;
     }
 
-    /* ===== Loading Indicators ===== */
+    /* ===== Loading Dots ===== */
     .loading-indicator {
         display: flex;
         align-items: center;
-        justify-content: center;
-        color: var(--text-muted);
-        font-style: italic;
-        padding: 1rem;
+        gap: 6px;
+        padding: 0.75rem 0;
+    }
+
+    .loading-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--accent);
+        opacity: 0.4;
+        animation: dot-pulse 1.4s ease-in-out infinite;
+    }
+
+    .loading-dot:nth-child(2) { animation-delay: 0.2s; }
+    .loading-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes dot-pulse {
+        0%, 80%, 100% { opacity: 0.4; transform: scale(0.85); }
+        40% { opacity: 1; transform: scale(1); }
     }
 
     /* ===== Draft & Translate ===== */
@@ -667,19 +697,21 @@
         display: flex;
         flex-direction: column;
         gap: 0.5rem;
-        margin-bottom: 1rem;
+        margin-bottom: 1.25rem;
     }
 
     .draft-label {
         font-family: var(--label-font);
+        font-size: 0.78rem;
         font-weight: 500;
-        font-size: 0.9rem;
-        color: var(--text);
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--text-muted);
     }
 
     .draft-input {
         font-family: var(--body-font);
-        font-size: 1rem;
+        font-size: 0.975rem;
         width: 100%;
         padding: 0.75rem;
         border: 1px solid var(--border);
@@ -687,11 +719,18 @@
         resize: vertical;
         min-height: 80px;
         color: var(--text);
-        background-color: var(--card);
+        background-color: var(--surface);
         text-size-adjust: 100%;
         -webkit-text-size-adjust: 100%;
         touch-action: manipulation;
         box-sizing: border-box;
+        transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .draft-input:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: 0 0 0 2px color-mix(in oklch, var(--accent) 15%, transparent);
     }
 
     .translate-controls {
@@ -702,18 +741,19 @@
 
     .clear-draft-button {
         border: 1px solid var(--border);
-        background-color: var(--surface);
+        background: none;
         color: var(--text-muted);
         border-radius: var(--border-radius);
-        padding: 0.25rem 0.75rem;
+        padding: 0.35rem 0.85rem;
         cursor: pointer;
-        font-family: var(--body-font);
-        transition: background-color 0.15s;
+        font-family: var(--label-font);
+        font-size: 0.82rem;
+        transition: color 0.15s, border-color 0.15s;
     }
 
     .clear-draft-button:hover {
-        background-color: var(--border);
         color: var(--text);
+        border-color: var(--text-muted);
     }
 
     .translate-button {
@@ -721,8 +761,10 @@
         color: var(--accent-text);
         border: none;
         border-radius: var(--border-radius);
-        font-family: var(--body-font);
+        font-family: var(--label-font);
+        font-size: 0.85rem;
         font-weight: 500;
+        letter-spacing: 0.02em;
         cursor: pointer;
         min-height: var(--min-touch-size);
         padding: 0 1.25rem;
@@ -742,44 +784,54 @@
         cursor: not-allowed;
     }
 
-    /* ===== Settings Styling ===== */
-    .settings-section {
-        width: 100%;
-        max-width: 800px;
-        margin: 0 auto;
-        padding: 0;
+    /* ===== Reply Section ===== */
+    .reply-section h2 {
+        font-family: var(--label-font);
+        font-size: 0.78rem;
+        font-weight: 500;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        margin-bottom: 0.75rem;
     }
 
-    /* ===== No Providers Message ===== */
+    /* ===== Settings Tab ===== */
+    .settings-section {
+        width: 100%;
+    }
+
+    /* ===== No Providers ===== */
     .no-providers-message {
         text-align: center;
-        padding: 2rem;
-        color: var(--text);
+        padding: 3rem 1rem;
     }
 
     .no-providers-message h2 {
+        font-family: var(--heading-font);
+        font-size: 1.4rem;
         color: var(--text);
-        margin-bottom: 1rem;
-        font-size: 1.2rem;
+        margin-bottom: 0.75rem;
+        font-weight: 400;
     }
 
     .no-providers-message p {
         margin-bottom: 1.5rem;
         color: var(--text-muted);
-        line-height: 1.4;
+        line-height: 1.6;
+        font-size: 0.9rem;
     }
 
     .settings-link-button {
         background-color: var(--accent);
         color: var(--accent-text);
         border: none;
-        padding: 0.75rem 1.5rem;
+        padding: 0.7rem 1.5rem;
         border-radius: var(--border-radius);
         cursor: pointer;
-        font-family: var(--body-font);
-        font-weight: bold;
-        font-size: 1rem;
-        transition: opacity 0.2s ease;
+        font-family: var(--label-font);
+        font-size: 0.85rem;
+        font-weight: 500;
+        transition: opacity 0.2s;
     }
 
     .settings-link-button:hover {
@@ -791,31 +843,32 @@
         display: flex;
         align-items: center;
         gap: 0.75rem;
-        margin-bottom: 1rem;
+        margin-bottom: 1.25rem;
         flex-wrap: wrap;
     }
 
     .infer-button {
-        padding: 0.55rem 1.2rem;
+        padding: 0.5rem 1.1rem;
         background-color: transparent;
         color: var(--accent);
         border: 1.5px solid var(--accent);
         border-radius: 999px;
         cursor: pointer;
-        font-family: var(--body-font);
-        font-size: 0.9rem;
+        font-family: var(--label-font);
+        font-size: 0.82rem;
         font-weight: 500;
-        transition: opacity 0.15s, background-color 0.15s;
+        letter-spacing: 0.02em;
+        transition: opacity 0.15s;
         min-height: var(--min-touch-size);
     }
 
     .infer-button:disabled {
-        opacity: 0.45;
+        opacity: 0.4;
         cursor: not-allowed;
     }
 
     .infer-button:not(:disabled):hover {
-        opacity: 0.82;
+        opacity: 0.78;
     }
 
     .infer-hint {
@@ -825,19 +878,19 @@
 
     .infer-error {
         font-size: 0.82rem;
-        color: var(--error, #e04040);
+        color: var(--error);
     }
 
     .suggestions-panel {
-        background-color: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: var(--border-radius);
-        padding: 1rem;
-        margin-bottom: 1.25rem;
+        border-left: 3px solid var(--accent);
+        padding: 0.75rem 0 0.75rem 1rem;
+        margin-bottom: 1.5rem;
     }
 
     .suggestions-note {
-        font-size: 0.82rem;
+        font-family: var(--body-font);
+        font-size: 0.85rem;
+        font-style: italic;
         color: var(--text-muted);
         margin: 0 0 1rem;
         line-height: 1.5;
@@ -851,7 +904,7 @@
 
     .suggestion-row:last-of-type {
         border-bottom: none;
-        margin-bottom: 0.25rem;
+        margin-bottom: 0.5rem;
     }
 
     .suggestion-header {
@@ -862,53 +915,54 @@
     }
 
     .suggestion-label {
-        font-size: 0.8rem;
+        font-family: var(--label-font);
+        font-size: 0.72rem;
         font-weight: 600;
         text-transform: uppercase;
-        letter-spacing: 0.04em;
+        letter-spacing: 0.07em;
         color: var(--text-muted);
     }
 
     .use-button {
-        font-size: 0.78rem;
+        font-family: var(--label-font);
+        font-size: 0.75rem;
         font-weight: 500;
         color: var(--accent);
         background: none;
         border: none;
         cursor: pointer;
         padding: 0;
-        font-family: var(--body-font);
-        opacity: 0.85;
         transition: opacity 0.1s;
     }
 
     .use-button:hover {
-        opacity: 1;
+        opacity: 0.7;
         text-decoration: underline;
     }
 
     .suggestion-text {
+        font-family: var(--body-font);
         font-size: 0.9rem;
-        line-height: 1.55;
+        line-height: 1.6;
         color: var(--text);
         margin: 0;
     }
 
     .suggestions-actions {
         display: flex;
-        gap: 0.75rem;
+        gap: 0.6rem;
         margin-top: 0.75rem;
     }
 
     .apply-all-button {
-        padding: 0.45rem 1rem;
+        padding: 0.4rem 1rem;
         background-color: var(--accent);
         color: var(--accent-text);
         border: none;
         border-radius: 999px;
         cursor: pointer;
-        font-family: var(--body-font);
-        font-size: 0.85rem;
+        font-family: var(--label-font);
+        font-size: 0.8rem;
         font-weight: 500;
         transition: opacity 0.15s;
     }
@@ -918,14 +972,14 @@
     }
 
     .dismiss-button {
-        padding: 0.45rem 1rem;
+        padding: 0.4rem 1rem;
         background: none;
         color: var(--text-muted);
         border: 1px solid var(--border);
         border-radius: 999px;
         cursor: pointer;
-        font-family: var(--body-font);
-        font-size: 0.85rem;
+        font-family: var(--label-font);
+        font-size: 0.8rem;
         transition: opacity 0.15s;
     }
 

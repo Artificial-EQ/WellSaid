@@ -44,9 +44,11 @@
             {/if}
         </button>
     </div>
-    <div class="message-count">
-        <span class="message-count-value">{messageCount}</span> messages
-    </div>
+    {#if messageCount > 0}
+        <div class="message-count">
+            <span class="message-count-value">{messageCount}</span> messages
+        </div>
+    {/if}
 </section>
 
 <style>
@@ -55,20 +57,24 @@
         flex-direction: row;
         flex-wrap: wrap;
         align-items: center;
-        gap: 1rem;
-        margin-bottom: 1rem;
+        gap: 0.75rem;
+        margin-bottom: 1.25rem;
     }
 
     .timeframe-controls {
         display: flex;
         align-items: center;
         gap: 0.5rem;
-        line-height: 1;
         flex-wrap: wrap;
     }
 
     .timeframe-controls label {
-        font-weight: bold;
+        font-family: var(--label-font);
+        font-size: 0.78rem;
+        font-weight: 500;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--text-muted);
     }
 
     .go-button {
@@ -76,12 +82,13 @@
         color: var(--accent-text);
         border: none;
         border-radius: 999px;
-        font-family: var(--body-font);
-        font-size: 0.875rem;
+        font-family: var(--label-font);
+        font-size: 0.82rem;
         font-weight: 600;
-        letter-spacing: 0.04em;
-        padding: 0 1.1rem;
-        height: 36px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        padding: 0 1.2rem;
+        height: 34px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -106,25 +113,28 @@
 
     .loading-spinner {
         display: inline-block;
-        width: 12px;
-        height: 12px;
-        border: 2px solid var(--white); /* Spinner color on button */
+        width: 11px;
+        height: 11px;
+        border: 2px solid color-mix(in oklch, var(--accent-text) 60%, transparent);
         border-radius: 50%;
-        border-top-color: transparent;
-        animation: spin 1s linear infinite;
+        border-top-color: var(--accent-text);
+        animation: spin 0.8s linear infinite;
     }
 
     .message-count {
-        font-size: 0.95rem;
+        font-family: var(--label-font);
+        font-size: 0.82rem;
         display: flex;
         align-items: center;
         color: var(--text-muted);
         margin-left: auto;
+        letter-spacing: 0.01em;
     }
 
     .message-count-value {
         font-weight: 600;
-        margin: 0 0.25rem;
+        color: var(--text);
+        margin-right: 0.25rem;
     }
 
     @media (max-width: 600px) {
