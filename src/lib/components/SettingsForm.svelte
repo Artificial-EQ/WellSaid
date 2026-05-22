@@ -32,8 +32,7 @@
 
     // Textarea fields with placeholder text
     const textareaPlaceholders: Record<string, string> = {
-        CUSTOM_CONTEXT: '',
-        PARTNER_STORY:
+PARTNER_STORY:
             "e.g. 'I learned early that love had to be earned. I tend to believe I'm not enough unless I'm performing or achieving something.'",
         PARTNER_TRIGGERS:
             "e.g. 'Feeling criticized or dismissed. Sensing distance or withdrawal without explanation.'",
@@ -53,7 +52,7 @@
             s.key.startsWith('PARTNER_') || s.key.startsWith('MY_')
         ),
         general: settings.filter((s: { key: string; value: string; description: string }) =>
-            ['HISTORY_LOOKBACK_HOURS', 'CONTACT_PHONE', 'CUSTOM_CONTEXT'].includes(s.key)
+            ['HISTORY_LOOKBACK_HOURS', 'CONTACT_PHONE'].includes(s.key)
         ),
         khoj: settings.filter((s: { key: string; value: string; description: string }) =>
             s.key.startsWith('KHOJ_')

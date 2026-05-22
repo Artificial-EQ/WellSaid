@@ -16,7 +16,6 @@ declare namespace App {
         GROK_API_KEY?: string
         GROK_MODEL?: string
         GROK_TEMPERATURE?: string
-        CUSTOM_CONTEXT?: string
-        DEFAULT_PROVIDER?: 'khoj' | 'openai' | 'anthropic' | 'grok'
+DEFAULT_PROVIDER?: 'khoj' | 'openai' | 'anthropic' | 'grok'
     }
 }

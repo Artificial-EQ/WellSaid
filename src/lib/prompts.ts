@@ -62,7 +62,7 @@ const responseFormat = [
 ].join('\n')
 
 export const systemContext = () =>
-    [settings.CUSTOM_CONTEXT, buildProfileContext(), getCoreContext()].filter(Boolean).join('\n\n')
+    [buildProfileContext(), getCoreContext()].filter(Boolean).join('\n\n')
 
 const buildPrompt = (tone: string, context: string): string => {
     const lines = [`${instructions} ${tone}`]

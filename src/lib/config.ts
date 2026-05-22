@@ -29,12 +29,7 @@ const defaultSettings: Record<string, { value?: string; description: string }> =
         value: env.HISTORY_LOOKBACK_HOURS,
         description: 'How many hours of prior conversation history to search for extra context',
     },
-    CUSTOM_CONTEXT: {
-        value: env.CUSTOM_CONTEXT,
-        description:
-            'To guide the AI\'s personality and behavior (Example: "Act as my therapist suggesting thoughtful replies" or "You are a helpful assistant")',
-    },
-    OPENAI_API_KEY: {
+OPENAI_API_KEY: {
         value: env.OPENAI_API_KEY,
         description: 'Available at https://platform.openai.com/api-keys',
     },
