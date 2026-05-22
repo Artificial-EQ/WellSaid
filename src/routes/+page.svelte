@@ -61,6 +61,11 @@
     const profileKeys = ['PARTNER_NAME', 'PARTNER_STORY', 'PARTNER_TRIGGERS', 'PARTNER_NEEDS', 'MY_STORY', 'MY_TRIGGERS', 'MY_NEEDS']
     const profileSettings = $derived(data.settings.filter((s: Setting) => profileKeys.includes(s.key)))
     const generalSettings = $derived(data.settings.filter((s: Setting) => !profileKeys.includes(s.key)))
+    const mergedProfileSettings = $derived(
+        profileSettings.map((s: Setting) =>
+            s.key in pendingSuggestions ? { ...s, value: pendingSuggestions[s.key] } : s
+        )
+    )
     let themePicker: ThemePicker
 
     let additionalContextExpanded = $state(false)
@@ -510,7 +515,9 @@
                         </div>
                     {/if}
 
-                    <SettingsForm settings={profileSettings} {form} suggestedValues={pendingSuggestions} />
+                    {#key pendingSuggestions}
+                        <SettingsForm settings={mergedProfileSettings} {form} />
+                    {/key}
                 </section>
             {:else}
                 <section class="settings-section">
