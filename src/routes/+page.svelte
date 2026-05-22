@@ -357,7 +357,7 @@
 <main class="app">
     <header>
         <h1>WellSaid</h1>
-        <p class="tagline">Empathy, Upgraded.</p>
+        <p class="tagline">Empathy, upgraded.</p>
     </header>
 
     <nav class="tab-bar">

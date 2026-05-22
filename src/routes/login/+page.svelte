@@ -26,7 +26,7 @@
 <div class="login-wrap">
     <header class="login-header">
         <h1>WellSaid</h1>
-        <p class="tagline">Empathy, Upgraded.</p>
+        <p class="tagline">Empathy, upgraded.</p>
     </header>
 
     <div class="login-card">
