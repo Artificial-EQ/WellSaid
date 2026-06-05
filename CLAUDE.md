@@ -29,7 +29,7 @@ yarn prune:list   # knip (all files)
 - `src/lib/iMessages.ts` — reads `~/Library/Messages/chat.db`; requires Full Disk Access for the terminal/editor
 - `src/lib/prompts.ts` — AI prompt construction
 - `src/lib/openAi.ts`, `anthropic.ts`, `grok.ts`, `khoj.ts` — per-provider API clients
-- `src/routes/+page.server.ts` — three form actions: `generate` (summary + replies), `translate` (raw draft → polished short/medium/long), `settings`
+- `src/routes/+page.server.ts` — four form actions: `generate` (summary + replies), `translate` (raw draft → polished short/medium/long), `settings`, `inferProfile` (AI-inferred psychological profile from loaded messages)
 - `src/routes/login/` — credential check, sets `auth_token` JWT cookie
 - `src/lib/components/ThemePicker.svelte` — floating accent/dark-mode picker; call `loadSaved()` on mount via `bind:this` to restore localStorage prefs
 
@@ -37,7 +37,7 @@ yarn prune:list   # knip (all files)
 
 Settings are persisted in `settings.db` (project root). Env vars in `.env` seed initial values but the UI settings form is the source of truth at runtime. Use `updateSetting()` from `src/lib/config.ts` to update programmatically.
 
-Key settings keys: `CONTACT_PHONE`, `HISTORY_LOOKBACK_HOURS`, `CUSTOM_CONTEXT`, `OPENAI_API_KEY`, `OPENAI_MODEL`, `ANTHROPIC_API_KEY`, `ANTHROPIC_MODEL`, `GROK_API_KEY`, `GROK_MODEL`, `KHOJ_API_URL`, `KHOJ_AGENT`.
+Key settings keys: `CONTACT_PHONE`, `HISTORY_LOOKBACK_HOURS`, `OPENAI_API_KEY`, `OPENAI_MODEL`, `ANTHROPIC_API_KEY`, `ANTHROPIC_MODEL`, `GROK_API_KEY`, `GROK_MODEL`, `KHOJ_API_URL`, `KHOJ_AGENT`.
 
 Psychological profile keys (all optional; omitted from prompt when empty): `PARTNER_NAME`, `PARTNER_STORY`, `PARTNER_TRIGGERS`, `PARTNER_NEEDS`, `MY_STORY`, `MY_TRIGGERS`, `MY_NEEDS`. Profile context is assembled in `src/lib/prompts.ts:buildProfileContext()` and injected into `systemContext()`.
 
@@ -65,7 +65,8 @@ Place `cert.pem` and `key.pem` in `.certs/` at project root — Vite auto-detect
 
 ## UI theming
 
-- Color system: OKLch semantic tokens in `src/variables.css` (`--bg`, `--surface`, `--card`, `--text`, `--border`, `--accent`, `--accent-soft`, `--accent-text`)
+- Color system: OKLch semantic tokens in `src/variables.css` (`--bg`, `--surface`, `--card`, `--text`, `--border`, `--accent`, `--accent-soft`, `--accent-text`); shadow tokens `--shadow-sm/md/lg`
+- Typography: `--heading-font` (Cormorant Garamond), `--body-font` (Lora), `--label-font` (DM Sans)
 - Dark mode: `[data-theme="dark"]` on `<html>`; accent variants via `[data-accent="sage|indigo|amber|rose"]`
 - Legacy aliases (`--primary-dark`, `--primary-light`, `--light`, `--white`, `--gray`) exist for backwards compat — prefer semantic tokens in new code
 
