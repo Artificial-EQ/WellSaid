@@ -5,15 +5,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Mock configuration setting
 vi.mock('$lib/config', () => ({
-    settings: { CUSTOM_CONTEXT: 'Test custom context for prompts' },
+    settings: {},
 }))
 
 const mockSettings = vi.mocked(config).settings as Record<string, string>
 
 describe('prompts', () => {
     describe('PERMANENT_CONTEXT', () => {
-        it('should include custom context and instructions', () => {
-            expect(systemContext()).toContain('Test custom context for prompts')
+        it('should include the core styling instructions', () => {
             expect(systemContext()).toContain(
                 'mimic my specific vocabulary, sentence structure, and communication style when suggesting replies'
             )
@@ -23,7 +22,6 @@ describe('prompts', () => {
     describe('systemContext with profiles', () => {
         beforeEach(() => {
             // Reset all profile fields to empty between tests
-            mockSettings.CUSTOM_CONTEXT = ''
             mockSettings.PARTNER_NAME = ''
             mockSettings.PARTNER_STORY = ''
             mockSettings.PARTNER_TRIGGERS = ''
@@ -77,13 +75,6 @@ describe('prompts', () => {
             const result = systemContext()
             expect(result).toContain('About Alex:')
             expect(result).toContain('About me:')
-        })
-
-        it('includes CUSTOM_CONTEXT before profile sections', () => {
-            mockSettings.CUSTOM_CONTEXT = 'Act as a therapist.'
-            mockSettings.PARTNER_STORY = 'Partner story.'
-            const result = systemContext()
-            expect(result.indexOf('Act as a therapist.')).toBeLessThan(result.indexOf('About'))
         })
 
         it('uses PARTNER_NAME in core context message labeling instruction', () => {

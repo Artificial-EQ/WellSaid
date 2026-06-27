@@ -18,7 +18,6 @@ vi.mock('$lib/config', () => ({
         OPENAI_TOP_P: '0.7',
         OPENAI_FREQUENCY_PENALTY: '0.1',
         OPENAI_PRESENCE_PENALTY: '0.2',
-        CUSTOM_CONTEXT: 'Act as my therapist suggesting replies to my contact',
     },
 }))
 
