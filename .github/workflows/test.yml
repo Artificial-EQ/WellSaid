@@ -18,8 +18,14 @@ jobs:
               run: yarn install --frozen-lockfile
             - name: Generate SvelteKit types
               run: yarn prepare
+            - name: Lint
+              run: yarn lint
+            - name: Type-check (svelte-check + tsc)
+              run: yarn run check
             - name: Run tests with coverage
               run: yarn test:coverage
+            - name: Build
+              run: yarn build
             - name: Upload coverage report
               uses: actions/upload-artifact@v7
               with:
