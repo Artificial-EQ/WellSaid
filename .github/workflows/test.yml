@@ -8,6 +8,13 @@ on:
 jobs:
     build:
         runs-on: ubuntu-latest
+        # Placeholder values so SvelteKit can generate $env/static/private types
+        # (svelte-check + build resolve these at sync time; real secrets live in .env locally).
+        env:
+            APP_USERNAME: ci
+            APP_PASSWORD: ci
+            JWT_SECRET: ci-placeholder-secret
+            LOG_LEVEL: info
         steps:
             - uses: actions/checkout@v7
             - uses: actions/setup-node@v7
@@ -18,8 +25,14 @@ jobs:
               run: yarn install --frozen-lockfile
             - name: Generate SvelteKit types
               run: yarn prepare
+            - name: Lint
+              run: yarn lint
+            - name: Type-check (svelte-check + tsc)
+              run: yarn run check
             - name: Run tests with coverage
               run: yarn test:coverage
+            - name: Build
+              run: yarn build
             - name: Upload coverage report
               uses: actions/upload-artifact@v7
               with:
