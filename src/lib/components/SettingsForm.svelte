@@ -6,7 +6,8 @@
         form?: any
     }>()
 
-    // Initialize form values from props
+    // Initialize form values from props (initial snapshot is intentional; $effect below syncs later changes)
+    // svelte-ignore state_referenced_locally
     let settingValues = $state<Record<string, string>>(
         Object.fromEntries(settings.map((s: { key: string; value: string }) => [s.key, s.value]))
     )

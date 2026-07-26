@@ -34,7 +34,7 @@ vi.mock('$lib/logger', () => ({
 function createMockRequestEvent(
     url: URL,
     body?: unknown
-): RequestEvent<Record<string, string>, '/'> {
+): RequestEvent<Record<string, never>, '/'> {
     return {
         request: new Request(url, {
             method: 'POST',
@@ -57,7 +57,7 @@ function createMockRequestEvent(
         url,
         isDataRequest: false,
         isSubRequest: false,
-    }
+    } as unknown as RequestEvent<Record<string, never>, '/'>
 }
 
 describe('root page server', () => {

@@ -27,11 +27,14 @@
         form?: any
     }>()
 
+    // svelte-ignore state_referenced_locally
     const DEFAULT_PROVIDER = data.defaultProvider
+    // svelte-ignore state_referenced_locally
+    const initialProvider = DEFAULT_PROVIDER || data.availableProviders[0]?.id || ''
 
     let formState = $state({
         ai: {
-            provider: DEFAULT_PROVIDER || data.availableProviders[0]?.id || '',
+            provider: initialProvider,
         },
         ui: {
             loading: false,
@@ -140,7 +143,7 @@
                 for (const [key, idx] of Object.entries(profileKeys as Record<string, number>)) {
                     suggestions[key] = parsedData[idx]
                 }
-                inferState.suggestions = suggestions as ProfileInferenceResult
+                inferState.suggestions = suggestions as unknown as ProfileInferenceResult
             } else {
                 throw new Error('Unexpected response format from server')
             }
@@ -150,6 +153,7 @@
             inferState.loading = false
         }
     }
+    // svelte-ignore state_referenced_locally
     const partnerLabel = data.partnerName || 'your partner'
     const summaryContent = $derived(
         formState.form.summary ||
