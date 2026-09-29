@@ -11,8 +11,8 @@ yarn preview      # run production build locally
 yarn prepare      # regenerate SvelteKit types (run after clone)
 yarn lint         # ESLint
 yarn lint:fix     # ESLint with auto-fix
-yarn format       # Prettier
-yarn check        # svelte-check + tsc
+yarn format       # Prettier (format:check to verify only)
+yarn run check    # svelte-kit sync + svelte-check — must use `run`; bare `yarn check` is Yarn 1's built-in dependency check
 yarn test         # Vitest (single run)
 yarn test:watch   # Vitest watch mode
 yarn test:coverage
@@ -22,11 +22,12 @@ yarn prune:list   # knip (all files)
 
 ## Architecture
 
-- `src/hooks.server.ts` — JWT auth guard; all routes except `/login` require a valid `auth_token` cookie
+- `src/hooks.server.ts` — JWT auth guard; all routes except `/login` (including `/health`) require a valid `auth_token` cookie
 - `src/lib/config.ts` — settings loaded from `settings.db` (SQLite) at startup; env vars seed defaults on first run
 - `src/lib/providers/registry.ts` — provider registry and `getDefaultProvider()` (defaults to OpenAI, falls back to first available)
-- `src/lib/provider.ts` — safe module-level init of `DEFAULT_PROVIDER` (null if none configured)
+- `src/lib/provider.ts` — `DEFAULT_PROVIDER` is computed once at module load (null if none configured); adding a provider key via settings won't change the default until the server restarts
 - `src/lib/iMessages.ts` — reads `~/Library/Messages/chat.db`; requires Full Disk Access for the terminal/editor
+- `src/lib/history.ts` — fetches extra context from the `HISTORY_LOOKBACK_HOURS` window before the loaded messages
 - `src/lib/prompts.ts` — AI prompt construction
 - `src/lib/openAi.ts`, `anthropic.ts`, `grok.ts`, `khoj.ts` — per-provider API clients
 - `src/routes/+page.server.ts` — four form actions: `generate` (summary + replies), `translate` (raw draft → polished short/medium/long), `settings`, `inferProfile` (AI-inferred psychological profile from loaded messages)
@@ -35,9 +36,9 @@ yarn prune:list   # knip (all files)
 
 ## Settings
 
-Settings are persisted in `settings.db` (project root). Env vars in `.env` seed initial values but the UI settings form is the source of truth at runtime. Use `updateSetting()` from `src/lib/config.ts` to update programmatically.
+Settings are persisted in `settings.db` (project root). Env vars in `.env` seed initial values (`INSERT OR IGNORE` — only on first run per key) but the UI settings form is the source of truth at runtime. Use `updateSetting()` from `src/lib/config.ts` to update programmatically; new keys must be added to `defaultSettings` in `src/lib/config.ts` so they're seeded and shown in the settings form.
 
-Key settings keys: `CONTACT_PHONE`, `HISTORY_LOOKBACK_HOURS`, `OPENAI_API_KEY`, `OPENAI_MODEL`, `ANTHROPIC_API_KEY`, `ANTHROPIC_MODEL`, `GROK_API_KEY`, `GROK_MODEL`, `KHOJ_API_URL`, `KHOJ_AGENT`.
+Key settings keys: `CONTACT_PHONE`, `HISTORY_LOOKBACK_HOURS`, `OPENAI_API_KEY`, `OPENAI_MODEL`, `ANTHROPIC_API_KEY`, `ANTHROPIC_MODEL`, `GROK_API_KEY`, `GROK_MODEL`, `KHOJ_API_URL`, `KHOJ_AGENT`, plus per-provider `*_TEMPERATURE` and OpenAI sampling keys (`OPENAI_TOP_P`, `OPENAI_FREQUENCY_PENALTY`, `OPENAI_PRESENCE_PENALTY`).
 
 Psychological profile keys (all optional; omitted from prompt when empty): `PARTNER_NAME`, `PARTNER_STORY`, `PARTNER_TRIGGERS`, `PARTNER_NEEDS`, `MY_STORY`, `MY_TRIGGERS`, `MY_NEEDS`. Profile context is assembled in `src/lib/prompts.ts:buildProfileContext()` and injected into `systemContext()`.
 
@@ -52,6 +53,11 @@ ALLOWED_HOST=        # Tailscale hostname, or omit for local-only
 ```
 
 AI provider keys go in settings.db (via UI or `.env` seed): `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GROK_API_KEY`, `KHOJ_API_URL`.
+
+## Testing
+
+- Tests live in `tests/` mirroring `src/` (not colocated)
+- `$env/static/private` and `$env/dynamic/private` are aliased to `tests/mocks/` in `vitest.config.ts` — add any new `$env` import there or tests fail to resolve it
 
 ## HTTPS / Tailscale
 
@@ -72,4 +78,4 @@ Place `cert.pem` and `key.pem` in `.certs/` at project root — Vite auto-detect
 
 ## Adding a provider
 
-Add an entry to `PROVIDER_REGISTRY` in `src/lib/providers/registry.ts`, implement a client module in `src/lib/`, and wire it into the `generate`, `translate`, and provider-selector logic in `+page.server.ts` and `+page.svelte`.
+Add an entry to `PROVIDER_REGISTRY` in `src/lib/providers/registry.ts`, implement a client module in `src/lib/` exporting reply/translate/inferProfile functions (see `anthropic.ts`), add its keys to `defaultSettings` in `config.ts`, and wire it into the provider ternaries in the `generate`, `translate`, and `inferProfile` actions in `+page.server.ts` plus the provider selector in `+page.svelte`.
